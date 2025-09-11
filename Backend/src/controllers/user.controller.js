@@ -32,7 +32,7 @@ const signup = async (req, res) => {
     return res.status(401).json({ message: "Email already exists" });
   }
   const profilePic = await cloudinaryUpload(localFilePath);
-  const token = generateJWT(newUser._id, process.env.EMAILTIME);
+  
   const newUser = new User({
     username,
     passwordSchema: {
@@ -41,10 +41,11 @@ const signup = async (req, res) => {
     email,
     fullName,
     profilePic: profilePic?.secure_url,
-    verificationEmailToken: { token },
+ 
   });
-
-  await newUser.save();
+  const token = generateJWT(newUser._id, process.env.EMAILTIME);
+  newUser.verificationEmailToken.token=  token ;
+  await newUser.save({validateBeforeSave:false});
 
   await sendVerificationEmail(
     email,
@@ -133,7 +134,7 @@ const changeProfilepic = async (req, res) => {
     if (!profilePic) {
       return res.status(500).json({ message: "internal server error" });
     }
-    const publicId = extractPublicId(req.user.profilePic);
+    const publicId = extractPublicId(req.user?.profilePic);
     await cloudinary.uploader.destroy(publicId);
     req.user.profilePic = profilePic?.secure_url;
     await req.user.save({ validateBeforeSave: false });
@@ -418,7 +419,7 @@ const getNotifications = async (req, res) => {
 const homePage = async (req, res) => {
   const user = req.user;
   const nillFollowing = await UserProfile.findOne({
-    follower: user._id,
+    follower: user?._id,
     requestStatus: "accepted",
   });
 

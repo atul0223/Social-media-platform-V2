@@ -13,7 +13,7 @@ const getUserProfile = async (req, res) => {
     if (targetUser._id.toString() === user._id.toString()) {
       sameUser = true;
     }
-    const isBlocked = user.blockedUsers.includes(targetUser._id);
+    const isBlocked = user?.blockedUsers?.includes(targetUser._id);
     const followRelation = await UserProfile.findOne({
       profile: targetUser._id,
       follower: user._id,
@@ -331,7 +331,7 @@ const toggleFollow = async (req, res) => {
   }
 
   const user = await User.findOne({ username }); //user that we want to follow or unfollow
-  if (!user || user.blockedUsers?.includes(userX._id)) {
+  if (!user || user.blockedUsers?.includes(userX?._id)) {
     return res.status(404).json({ message: "user not exists" });
   }
   if (userX.username === user.username) {
