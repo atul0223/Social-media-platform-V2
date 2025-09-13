@@ -7,6 +7,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 function Login() {
   const navigate = useNavigate();
@@ -24,10 +25,10 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const res = await axios
+    await axios
       .post(
         `${BACKENDURL}/user/login`,
-        { username, password },
+        { username, password ,trustDevice },
         { withCredentials: true }
       )
       .then(() => {
@@ -37,8 +38,11 @@ function Login() {
       .catch((_error) => {
         setLoading(false);
         setError(_error.response?.data?.message);
+        if(_error.response?.data.requiresOtp){
+          navigate("/signup")
+        }
       });
-    console.log(res);
+    
   };
 
   return (
@@ -48,14 +52,22 @@ function Login() {
       }`}
     >
       <Loading />
-      <BackgroundBeamsWithCollision className=" lg:w-1/3 sm:w-2/3 md:w-1/2 mb-10 sm:mb-0 h-3/4 w-11/12 shadow-2xl bg-neutral-200 rounded-2xl p-4 shadow-black overflow-hidden pt-15 sm:pt-10 ">
-        <h1 className="text-4xl font-serif text-center text-shadow-2xs">
+      <BackgroundBeamsWithCollision className=" lg:w-1/3 sm:w-2/3 md:w-1/2 mb-10 sm:mb-0 h-2/3 w-11/12 shadow-2xl bg-neutral-200 rounded-2xl p-4 shadow-black overflow-hidden   ">
+        <h1 className="text-3xl font-serif text-center text-shadow-2xs">
           Login
         </h1>
-        <form onSubmit={handleSubmit} className="mt-10">
+        <div className="w-full flex justify-center mt-3">
+        <DotLottieReact
+      src="https://lottie.host/b4ec3d9b-f143-4e97-ad35-afdac8ab220b/qTHTDULUb4.lottie"
+      loop
+      autoplay
+      className="w-30 h-30 rounded-full bg-neutral-400"
+    />
+    </div>
+        <form onSubmit={handleSubmit} className="mt-3">
           <FloatingInput
             type="text"
-            label="Username"
+            label="Username or Email"
             value={username}
             onChange={handleChange(setUsername)}
             error={error}
@@ -78,27 +90,27 @@ function Login() {
             className="m-2"
           />
           <label htmlFor="trustDevice">Trust this device?</label>
-          <Button className="w-full mt-4" type="submit" disabled={loading}>
+          <Button className="w-full mt-4" type="submit" disabled={loading || password === "" || username ===""}>
             Login
           </Button>
         </form>
         <div className="w-full font-bold">
           <hr />
-          <p className=" mt-4 mb-3 text-center">or</p>
+          <p className=" mt-2 mb-2 text-center">or</p>
           <hr />
         </div>
-        <Link
-          to={""}
-          className="text-center text-blue-600 w-full flex justify-center font-serif"
+       <h3 className="text-center  w-full flex justify-center font-serif "> Forgot password?<Link
+          to={"/forgotPassword"}
+          className="text-blue-600 underline ml-1"
         >
-          Forgot password
-        </Link>
+          Use otp
+        </Link></h3>
         <div className="w-full font-bold">
-          <hr className=""/>
+          <hr className="" />
           <p className=" mt-2 text-center">or</p>
           <hr />
         </div>
-        <p className=" text-center mt-3 mb-5">
+        <p className=" text-center mt-3 mb-5 sm:mb-0">
           Need an account?{" "}
           <Link to="/Signup" className="text-blue-500 font-bold underline">
             Create one

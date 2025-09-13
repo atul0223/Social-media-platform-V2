@@ -19,7 +19,7 @@ const extractPublicId = (url) => {
 };
 const signup = async (req, res) => {
   const { username, password, email, fullName } = req.body;
-  if ([username, password, email, fullName].some((f) => !f?.trim())) {
+  if ([username, password, email].some((f) => !f?.trim())) {
     return res.status(401).json({ message: "fields required" });
   }
   const localFilePath = req.files?.profilePic?.[0]?.path;
@@ -60,13 +60,15 @@ const signup = async (req, res) => {
   });
 };
 const login = async (req, res) => {
-  const { username, password, trustDevice } = req.body;
-  if (username === null || password === null) {
+  const { identifier , password, trustDevice } = req.body;
+  if (identifier === null || password === null) {
     return res
       .status(401)
       .json({ message: "Username and password are required" });
   }
-  const user = await User.findOne({ username });
+const user = await User.findOne({
+  $or: [{ email: identifier }, { username: identifier }]
+});
   if (!user) return res.status(404).json({ message: "User not found" });
 
   const validateUser = await user.validatePassword(password);
@@ -222,26 +224,21 @@ const changePasswordIn = async (req, res) => {
   });
 };
 const forgetPassword = async (req, res) => {
-  const { email } = req.body;
-  if (!email || email.trim() === "") {
-    return res.status(400).json({ message: "Email is required" });
+  const { identifier } = req.body;
+  if (!identifier) {
+    return res.status(400).json({ message: "identifier is required" });
   }
-  const user = await User.findOne({ email });
+  
+ const user = await User.findOne({
+  $or: [{ email: identifier }, { username: identifier }]
+});
+  
+  
   if (!user) {
-    return res.status(404).json({ message: "User not found with this email" });
-  }
-  const emailToken = generateJWT(user._id, process.env.EMAILTIME);
-  user.verificationEmailToken.token = emailToken;
-  await user.save({ validateBeforeSave: false });
-  sendVerificationEmail(
-    email,
-    emailToken,
-    "Password Reset",
-    "reset your password",
-    "changePass"
-  );
+    return res.status(404).json({ message: "User not found" });
+  }sendOtp(user.email)
   return res.status(200).json({
-    message: "reset email sent successfully",
+    message: "otp sent successfully",
   });
 };
 const changeEmail = async (req, res) => {
@@ -338,14 +335,15 @@ const handleRequest = async (req, res) => {
 };
 
 const verifyOtp = async (req, res) => {
-  const { email, otp, trustDevice } = req.body;
+  const { identifier, otp, trustDevice } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ message: "please provide email" });
+  if (!identifier) {
+    return res.status(400).json({ message: "please provide unique credential" });
   }
-
-  const user = await User.findOnd(email).select("-passwordSchema");
-
+ const user = await User.findOne({
+  $or: [{ email: identifier }, { username: identifier }]
+});
+  
   if (!user) {
     return res.status(404).json({ message: "user not found" });
   }

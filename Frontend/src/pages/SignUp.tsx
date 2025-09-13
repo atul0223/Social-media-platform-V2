@@ -4,12 +4,12 @@ import UserContext from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { BACKENDURL } from "@/config";
 import { useContext, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
 
 function Signup() {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,9 +18,9 @@ function Signup() {
   const { loading, setLoading }: any = useContext(UserContext);
   const [previewPic, setPreviewPic] = useState("");
   const [selectedPic, setSelectedPic] = useState("");
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const handlePickPhoto = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
@@ -40,7 +40,7 @@ function Signup() {
       .post(`${BACKENDURL}/user/signup`, formData, { withCredentials: true })
       .then(() => {
         setLoading(false);
-        navigate("/");
+        // navigate("/verifyEmail");
       })
       .catch((_error) => {
         setLoading(false);
@@ -63,9 +63,8 @@ function Signup() {
     >
       <Loading />
       <BackgroundBeamsWithCollision className=" lg:w-1/3 sm:w-2/3 md:w-1/2  w-11/12 h-full shadow-2xl bg-neutral-200 rounded-2xl p-4 shadow-black overflow-hidden pt-8 ">
-       
         <form onSubmit={handleSubmit}>
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-3">
             <img
               src={previewPic || "/pic.jpg"}
               alt="Group Preview"
@@ -118,9 +117,14 @@ function Signup() {
             onChange={handleChange(setConfirmPass)}
             error={error}
             readOnly={loading}
-        
           />
-          <input type="checkbox" id="trustDevice" checked readOnly={loading} className="m-2"/>
+          <input
+            type="checkbox"
+            id="trustDevice"
+            defaultChecked
+            readOnly={loading}
+            className="m-2"
+          />
           <label htmlFor="trustDevice">
             Accept our{" "}
             <Link to={"/"} className="text-blue-700">
@@ -130,14 +134,19 @@ function Signup() {
           <Button
             className="w-full mt-4 cursor-pointer"
             type="submit"
-            disabled={loading}
+            disabled={loading || password!==confirmpass || [username,password,confirmpass,email].some(f=>f.trim()==="")}
           >
             Sign up
           </Button>
         </form>
-        <p className=" text-center mt-4">
+        <div className="w-full font-bold">
+          <hr className="" />
+          <p className=" mt-2 text-center">or</p>
+          <hr />
+        </div>
+        <p className=" text-center  mb-8">
           Already have an account?{" "}
-          <Link to="/" className="text-blue-500 font-bold underline">
+          <Link to="/" className="text-blue-500 font-bold underline ">
             login
           </Link>
         </p>

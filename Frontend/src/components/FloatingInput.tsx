@@ -40,7 +40,7 @@ const FloatingInput = ({
             error
               ? "border-red-500 focus:border-red-600"
               : isFocused
-              ? "border-blue-500"
+              ? "border-black"
               : "border-gray-400 hover:border-gray-700"
           }
         `}
@@ -56,7 +56,7 @@ const FloatingInput = ({
                 error
                   ? "text-red-600"
                   : isFocused
-                  ? "text-blue-600"
+                  ? "text-gray-900"
                   : "text-gray-600"
               }`
             : "top-4 text-base text-gray-500"
