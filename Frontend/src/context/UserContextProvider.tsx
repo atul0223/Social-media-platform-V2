@@ -1,13 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState ,useEffect} from "react";
 import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
-export default function UserContextProvider({ children }:any) {
-  
-  const actualuser1 = localStorage.getItem("actualuser1");
-  const [loggedIn, setLoggedIn] = useState(true);
-  const [selectedPost, setSelectedPost] = useState();
-  const [singlePostopen, setsinglePostOpen] = useState(false);
+export default function UserContextProvider({ children }: any) {
+   const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentUserDetails, setCurrentUserDetails] = useState({});
   const [selectedChat, setSelectedChat] = useState([]);
@@ -21,7 +17,6 @@ export default function UserContextProvider({ children }:any) {
     username: "",
     followerCount: 0,
     followingCount: 0,
-
     postCount: 0,
     isFollowing: false,
     requestStatus: "follow",
@@ -34,11 +29,9 @@ export default function UserContextProvider({ children }:any) {
     const res = await axios.get(`${BACKENDURL}/chat/${chatId}/getMessages`, {
       withCredentials: true,
     });
- 
+
     setMessages(res.data);
 
-   
-    
     setLoading(false)
     return res.data;
   };
@@ -48,7 +41,7 @@ export default function UserContextProvider({ children }:any) {
       { userId1: userId },
       { withCredentials: true }
     );
-   
+
     setSelectedChat(res.data);
     return res.data;
   };
@@ -57,8 +50,11 @@ export default function UserContextProvider({ children }:any) {
       const response = await axios.get(`${BACKENDURL}/user/getUser`, {
         withCredentials: true,
       });
-      setCurrentUserDetails(response.data);
-
+      localStorage.setItem("currentUser", JSON.stringify(response.data));
+      const rawUser = localStorage.getItem("currentUser");
+      if (rawUser) {
+        setCurrentUserDetails(JSON.parse(rawUser));
+      }
       return response.data;
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -108,16 +104,9 @@ export default function UserContextProvider({ children }:any) {
 
   return (
     <UserContext.Provider
-    
       value={{
-        actualuser1,
-        selectedPost,
-        loggedIn,
-        setLoggedIn,
-        fetchUser,
         targetuser,
-        setTargetUser,
-        setSelectedPost,
+        fetchUser,
         loading,
         setLoading,
         singlePostopen,

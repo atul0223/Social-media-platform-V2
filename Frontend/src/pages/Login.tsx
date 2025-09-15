@@ -8,14 +8,17 @@ import { Link, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import OtpComponent from "@/components/OtpComponent";
 
 function Login() {
+  let emailVerify;
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [trustDevice, setTruestDevice] = useState(true);
   const [error, setError] = useState("");
-  const { loading, setLoading }: any = useContext(UserContext);
+  const { loading, setLoading ,fetchCurrentUser}: any = useContext(UserContext);
+  const[OtpNeeded,setOtpNeeded]=useState(false)
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
     (value: string) => {
@@ -28,24 +31,29 @@ function Login() {
     await axios
       .post(
         `${BACKENDURL}/user/login`,
-        { username, password ,trustDevice },
+        { identifier, password ,trustDevice },
         { withCredentials: true }
       )
       .then(() => {
         setLoading(false);
-        navigate("/");
+        fetchCurrentUser()
+        navigate("/homepage");
       })
       .catch((_error) => {
         setLoading(false);
         setError(_error.response?.data?.message);
+        emailVerify =_error.response?.data.emailVerify
         if(_error.response?.data.requiresOtp){
-          navigate("/signup")
+          setOtpNeeded(true)
         }
       });
     
   };
+if (OtpNeeded) {
+  return (<OtpComponent identifier={identifier} setOtpSend={setOtpNeeded} emailVerify={emailVerify}/>)
+}
 
-  return (
+ else return (
     <div
       className={`w-screen min-h-screen flex justify-center items-center bg-neutral-300 ${
         loading ? "opacity-75" : ""
@@ -54,22 +62,22 @@ function Login() {
       <Loading />
       <BackgroundBeamsWithCollision className=" lg:w-1/3 sm:w-2/3 md:w-1/2 mb-10 sm:mb-0 h-2/3 w-11/12 shadow-2xl bg-neutral-200 rounded-2xl p-4 shadow-black overflow-hidden   ">
         <h1 className="text-3xl font-serif text-center text-shadow-2xs">
-          Login
+          Welcome back !
         </h1>
         <div className="w-full flex justify-center mt-3">
         <DotLottieReact
       src="https://lottie.host/b4ec3d9b-f143-4e97-ad35-afdac8ab220b/qTHTDULUb4.lottie"
       loop
       autoplay
-      className="w-30 h-30 rounded-full bg-neutral-400"
+      className="w-30 h-30 mb-4 rounded-full bg-neutral-400"
     />
     </div>
         <form onSubmit={handleSubmit} className="mt-3">
           <FloatingInput
             type="text"
             label="Username or Email"
-            value={username}
-            onChange={handleChange(setUsername)}
+            value={identifier}
+            onChange={handleChange(setIdentifier)}
             error={error}
             readOnly={loading}
           />
@@ -90,7 +98,7 @@ function Login() {
             className="m-2"
           />
           <label htmlFor="trustDevice">Trust this device?</label>
-          <Button className="w-full mt-4" type="submit" disabled={loading || password === "" || username ===""}>
+          <Button className="w-full mt-4" type="submit" disabled={loading || password === "" || identifier ===""}>
             Login
           </Button>
         </form>

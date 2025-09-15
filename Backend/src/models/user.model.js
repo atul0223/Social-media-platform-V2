@@ -37,17 +37,6 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
-    verificationEmailToken: {
-      token: {
-        type: String,
-
-        default: "", // Initially empty, will be set when generating a token
-      },
-      used: {
-        type: Boolean,
-        default: false, // Usually starts as false
-      },
-    },
     blockedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,

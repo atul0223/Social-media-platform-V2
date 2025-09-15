@@ -1,47 +1,43 @@
 import User from "../models/user.model.js";
 import isFollowed from "../utils/isFollowed.js";
 import UserProfile from "../models/UserProfile.model.js";
+import Post from "../models/posts.model.js";
 const getUserProfile = async (req, res) => {
   try {
-    let sameUser = false;
     const { username } = req.params;
     const user = req.user;
-    const targetUser = await User.findOne({ username }).select(
-      "-password -refreshToken -verificationEmailToken -isVerified  -username"
-    );
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    if (targetUser._id.toString() === user._id.toString()) {
-      sameUser = true;
+    if (!username?.trim()) {
+      return res.status(400).json({ message: "please provide username" });
     }
+
+    const targetUser = await User.findOne({ username }).select(
+      "-password -refreshToken -verificationEmailToken -isVerified -username"
+    );
+    if (!targetUser) {
+      return res.status(404).json({ message: "user not exists" });
+    }
+
+    const sameUser = targetUser._id.toString() === user._id.toString();
     const isBlocked = user?.blockedUsers?.includes(targetUser._id);
+    if (targetUser?.blockedUsers?.includes(user._id)) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
     const followRelation = await UserProfile.findOne({
       profile: targetUser._id,
       follower: user._id,
     });
 
-    let requestStatus = "follow"; // default state
-
-    if (followRelation) {
-      if (followRelation.requestStatus === "accepted") {
-        requestStatus = "unfollow";
-      } else if (followRelation.requestStatus === "pending") {
-        requestStatus = "requested";
-      }
-    }
-
-    if (targetUser?.blockedUsers?.includes(user._id)) {
-      return res.status(404).json({ message: "user not found" });
-    }
-    if (!username?.trim()) {
-      return res.status(400).json({ message: "please provide username" });
-    }
+    let requestStatus = "follow";
+    if (followRelation?.requestStatus === "accepted") requestStatus = "unfollow";
+    else if (followRelation?.requestStatus === "pending") requestStatus = "requested";
 
     const userProfile = await User.aggregate([
-      {
-        $match: {
-          username: username.trim(),
-        },
-      },
+      { $match: { username: username.trim() } },
       {
         $lookup: {
           from: "userprofiles",
@@ -50,7 +46,6 @@ const getUserProfile = async (req, res) => {
           as: "followers",
         },
       },
-
       {
         $lookup: {
           from: "userprofiles",
@@ -68,22 +63,10 @@ const getUserProfile = async (req, res) => {
               cond: { $eq: ["$$follower.requestStatus", "accepted"] },
             },
           },
-        },
-      },
-      {
-        $addFields: {
-          followersCount: {
-            $size: "$followers",
-          },
-          followingCount: {
-            $size: "$following",
-          },
+          followersCount: { $size: "$followers" },
+          followingCount: { $size: "$following" },
           isFollowing: {
-            $cond: {
-              if: { $in: [req.user?._id, "$followers.follower"] },
-              then: true,
-              else: false,
-            },
+            $in: [user._id, { $map: { input: "$followers", as: "f", in: "$$f.follower" } }],
           },
         },
       },
@@ -97,9 +80,7 @@ const getUserProfile = async (req, res) => {
       },
       {
         $addFields: {
-          postsCount: {
-            $size: "$postList",
-          },
+          postsCount: { $size: "$postList" },
         },
       },
       {
@@ -114,62 +95,38 @@ const getUserProfile = async (req, res) => {
         },
       },
     ]);
-    if (
-      targetUser.profilePrivate === true &&
-      !(await isFollowed(targetUser._id, user._id)) &&
-      !sameUser
-    ) {
+
+    const profileDetails = userProfile[0];
+
+    if (targetUser.profilePrivate && !(await isFollowed(targetUser._id, user._id)) && !sameUser) {
       return res.json({
-        profileDetails: userProfile[0],
-        requestStatus: requestStatus,
-        sameUser: sameUser,
-        isBlocked: isBlocked,
+        profileDetails,
+        requestStatus,
+        sameUser,
+        isBlocked,
         isPrivate: true,
         posts: [],
       });
     }
-    const userPosts = await User.aggregate([
-      {
-        $match: { username: username }, // Replace with actual query param
-      },
+
+    const userPosts = await Post.aggregate([
+      { $match: { publisher: targetUser._id } },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
       {
         $lookup: {
-          from: "posts",
-          localField: "_id",
-          foreignField: "publisher",
-
-          as: "postList",
+          from: "users",
+          localField: "publisher",
+          foreignField: "_id",
+          as: "publisherDetails",
         },
       },
-      {
-        $set: {
-          postList: {
-            $sortArray: {
-              input: "$postList",
-              sortBy: { createdAt: -1 },
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          "postList.postDetails": {
-            _id: "$postList._id",
-            post: "$postList.post",
-            title: "$postList.title",
-          },
-        },
-      },
-      {
-        $unwind: {
-          path: "$postList",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      { $unwind: "$publisherDetails" },
       {
         $lookup: {
           from: "likes",
-          localField: "postList._id",
+          localField: "_id",
           foreignField: "post",
           as: "likes",
         },
@@ -177,13 +134,9 @@ const getUserProfile = async (req, res) => {
       {
         $lookup: {
           from: "comments",
-          let: { postId: "$postList._id" },
+          let: { postId: "$_id" },
           pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$post", "$$postId"] },
-              },
-            },
+            { $match: { $expr: { $eq: ["$post", "$$postId"] } } },
             {
               $lookup: {
                 from: "users",
@@ -208,63 +161,52 @@ const getUserProfile = async (req, res) => {
         },
       },
       {
-        $group: {
-          _id: "$_id",
-          username: { $first: "$username" },
-          profilePic: { $first: "$profilePic" },
-          postList: {
-            $push: {
-              postDetails: {
-                _id: "$postList._id",
-                post: "$postList.post",
-                title: "$postList.title",
-              },
-
-              likesCount: { $size: "$likes" },
-              commentsCount: { $size: "$comments" },
-              publisherDetails: {
-                username: "$username",
-                profilePic: "$profilePic",
-              },
-              comments: "$comments",
-            },
-          },
+        $addFields: {
+          currentUserId: user._id,
         },
       },
       {
         $project: {
           _id: 0,
-          postList: {
-            $arrayToObject: {
-              $map: {
-                input: { $range: [0, { $size: "$postList" }] },
-                as: "index",
-                in: {
-                  k: {
-                    $concat: ["P", { $toString: "$$index" }],
-                  },
-                  v: { $arrayElemAt: ["$postList", "$$index"] },
+          postDetails: {
+            _id: "$_id",
+            content: "$content",
+            title: "$title",
+            description: "$description",
+          },
+          likesCount: { $size: "$likes" },
+          commentsCount: { $size: "$comments" },
+          comments: "$comments",
+          publisherDetails: {
+            username: "$publisherDetails.username",
+            profilePic: "$publisherDetails.profilePic",
+          },
+          isLiked: {
+            $in: [
+              "$currentUserId",
+              {
+                $map: {
+                  input: "$likes",
+                  as: "like",
+                  in: "$$like.liker",
                 },
               },
-            },
+            ],
           },
         },
       },
     ]);
-    const postsList = userPosts[0].postList;
-
-    if (!userProfile?.length) {
-      return res.status(404).json({ message: "user not exists" });
-    }
 
     return res.status(200).json({
       success: true,
-      profileDetails: userProfile[0],
-      posts: postsList,
-      requestStatus: requestStatus,
-      isBlocked: isBlocked,
-      sameUser: sameUser,
+      profileDetails,
+      posts: userPosts,
+      requestStatus,
+      isBlocked,
+      sameUser,
       isPrivate: false,
+      page,
+      limit,
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({

@@ -12,7 +12,7 @@ import {
   changeEmail,
   toggleProfileVisiblity,
   handleRequest,
-  verifyOtp
+  verifyOtp,
 } from "../controllers/user.controller.js";
 import upload from "../middleware/multer.middleware.js";
 import User from "../models/user.model.js";
@@ -29,36 +29,6 @@ router.route("/signup").post(
   ]),
   signup
 );
-router.get("/verify/:token", async (req, res) => {
-  try {
-    const { token } = req.params;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).send("User not found");
-    if (user.verificationEmailToken.token !== token) {
-      return res.status(400).send("Invalid token");
-    }
-    if (user.verificationEmailToken.used) {
-      return res.status(400).send("Token has already been used");
-    }
-    if (user.isVerified) return res.send("Email already verified");
-
-    user.isVerified = true;
-    user.verificationEmailToken.used = true; // Mark the token as used
-    user.verificationEmailToken.token = ""; // Clear the token after use
-    await user.save();
-
-    return res
-      .status(200)
-      .json({ message: "Email verified successfully!", success: true });
-  } catch (err) {
-    console.error("Verification error:", err);
-    return res
-      .status(400)
-      .json({ message: "Invalid or expired token", success: false });
-  }
-});
 router.route("/login").post(login);
 router.route("/logout").get(verifyUser, logout);
 router.route("/verifyotp").post(verifyOtp);

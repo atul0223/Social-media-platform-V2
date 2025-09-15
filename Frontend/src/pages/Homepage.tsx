@@ -1,0 +1,114 @@
+import { CardPosts } from "@/components/CardPosts";
+import Loading from "@/components/Loading";
+
+import { BACKENDURL } from "@/config";
+import UserContext from "@/context/UserContext";
+import axios from "axios";
+
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+
+export default function Homepage() {
+  type PostType = {
+    comments: [];
+    commentsCount: number;
+    likesCount: number;
+    postDetails: {
+      _id: string;
+      content: string;
+      description: string;
+      title: string;
+    };
+    publisherDetails: {
+      username: string;
+      profilePic: string;
+    };
+  };
+
+  const [posts, setPosts] = useState<PostType[]>([]);
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const bottomRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [hasMore]
+  );
+
+  const { setLoading }: any = useContext(UserContext);
+
+  const limit = 4;
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(
+          `${BACKENDURL}/home?page=${page}&limit=${limit}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (res.data.feedPosts.length < limit) {
+          setHasMore(false);
+        }
+
+        setPosts((prev) => [...prev, ...res.data.feedPosts]);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [page]);
+
+  return (
+
+     
+      <div className="h-full  max-w-screen  flex flex-wrap justify-center xl:p-10"> <Loading />
+        <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:pl-30 xl:pr-30   gap-3.5 sm:gap-5 h-full  ">
+         
+            {posts.map(
+              (
+                postItem: {
+                  comments: [];
+                  commentsCount: number;
+                  likesCount: number;
+                  postDetails: {
+                    _id: string;
+                    content: string;
+                    description: string;
+                    title: string;
+                  };
+                  publisherDetails: { username: string; profilePic: string };
+                },
+                index
+              ) => {
+                const isLast = index === posts.length - 1;
+
+                return (
+                  <div key={postItem.postDetails._id}>
+                    <CardPosts
+                      postItem={postItem}
+                      postKey={postItem.postDetails._id}
+                    />
+                    {isLast && <div ref={bottomRef}></div>}
+                  </div>
+                );
+              }
+            )}
+          </div>
+        </div>
+  
+   
+  );
+}

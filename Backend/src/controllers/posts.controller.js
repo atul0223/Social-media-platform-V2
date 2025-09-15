@@ -20,7 +20,9 @@ const newPosts = async (req, res) => {
   const userX = req.user;
   const { title, description } = req.body;
 
-  const localFilePath = req.files?.post?.[0]?.path;
+  const localFilePath = req.files?.content?.[0]?.path;
+ 
+  
   if (!localFilePath) {
     return res.status(401).json({ message: "please provide a picture" });
   }
@@ -29,10 +31,10 @@ const newPosts = async (req, res) => {
     return res.status(500).json({ message: "error while uploading pic" });
   }
   const post = await Post.create({
-    title: title || Date.now(),
+    title: title ,
     description,
-    post: upload?.secure_url,
-    publisher: userX,
+    content: upload?.secure_url,
+    publisher: userX._id,
   });
   return res.status(200).json({
     message: "successfully posted",
@@ -169,101 +171,68 @@ const deleteComments = async (req, res) => {
     message: "Comment deleted successfully",
   });
 };
-const getSinglePost =async (req, res) => {
-  const { postId } = req.params;
-  const user = req.user;
-  const post = await Post.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(postId),
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "publisher",
-        foreignField: "_id",
-        as: "publisherDetails",
-      },
-    },
-    {
-      $lookup: {
-        from: "likes",
-        localField: "_id",
-        foreignField: "post",
-        as: "likes",
-      },
-    },
-    {
-      $addFields: {
-        likesCount: {
-          $size: "$likes",
+const getSinglePostComments = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const post = await Post.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(postId),
         },
       },
-    },
-    {
-      $lookup: {
-        from: "comments",
-        let: { postId: new mongoose.Types.ObjectId(postId) },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$post", "$$postId"] },
-            },
-          },
-          {
-            $sort: { createdAt: -1 },
-          },
-          {
-            $lookup: {
-              from: "users",
-              localField: "commenter",
-              foreignField: "_id",
-              as: "commenterDetails",
-            },
-          },
-          { $unwind: "$commenterDetails" },
-          {
-            $project: {
-              _id: 1,
-              comment: 1,
-              commenterDetails: {
-                username: "$commenterDetails.username",
-                profilePic: "$commenterDetails.profilePic",
+      {
+        $lookup: {
+          from: "comments",
+          let: { postId: new mongoose.Types.ObjectId(postId) },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$post", "$$postId"] },
               },
             },
-          },
-        ],
-        as: "comments",
-      },
-    },
-    {
-      $addFields: {
-        commentsCount: {
-          $size: "$comments",
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+              $lookup: {
+                from: "users",
+                localField: "commenter",
+                foreignField: "_id",
+                as: "commenterDetails",
+              },
+            },
+            { $unwind: "$commenterDetails" },
+            {
+              $project: {
+                _id: 1,
+                comment: 1,
+                commenterDetails: {
+                  username: "$commenterDetails.username",
+                  profilePic: "$commenterDetails.profilePic",
+                },
+              },
+            },
+          ],
+          as: "comments",
         },
       },
-    },
-    {
-      $unwind: {
-        path: "$publisherDetails",
-        preserveNullAndEmptyArrays: true,
+      {
+        $project: {
+          _id: 0,
+          comments: 1,
+        },
       },
-    },
-    {
-      $project: {
-        "publisherDetails.username": 1,
-        "publisherDetails.profilePic": 1,
-        comments: 1,
-        likesCount: 1,
-        commentsCount: 1,
-        post: 1,
-        title: 1,
-      },
-    },
-  ]);
-  console.log(post[0]);
+    ]);
 
-  res.status(200).json({ post: post[0] });
-}
-export { newPosts, deletePost, toggleLike, addComment, deleteComments ,getSinglePost};
+    res.status(200).json({ comments: post[0].comments });
+  } catch (error) {
+    console.error("Error in getSinglePostComments:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+export { newPosts, deletePost, toggleLike, addComment, deleteComments ,getSinglePostComments};

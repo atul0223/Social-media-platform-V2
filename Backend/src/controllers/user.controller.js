@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import cloudinaryUpload from "../utils/cloudinary.js";
 import { v2 as cloudinary } from "cloudinary";
 import generateJWT from "../utils/jwtokengenerator.js";
-import sendVerificationEmail from "../utils/sendEmail.js";
 import sendOtp from "../utils/sendOtp.js";
 import UserProfile from "../models/UserProfile.model.js";
 import mongoose from "mongoose";
@@ -43,20 +42,11 @@ const signup = async (req, res) => {
     profilePic: profilePic?.secure_url,
  
   });
-  const token = generateJWT(newUser._id, process.env.EMAILTIME);
-  newUser.verificationEmailToken.token=  token ;
-  await newUser.save({validateBeforeSave:false});
 
-  await sendVerificationEmail(
-    email,
-    token,
-    "Email Verification",
-    "verify your email",
-    "verifyemail"
-  );
+  sendOtp(email)
 
   return res.status(200).json({
-    message: "Successfully registered. Please verify your email.",
+    message: "Successfully registered" ,requiresOtp: true ,emailVerify:true
   });
 };
 const login = async (req, res) => {
@@ -86,18 +76,13 @@ const user = await User.findOne({
 
   if (!user.isVerified) {
     const token = generateJWT(user._id, process.env.EMAILTIME);
-    await sendVerificationEmail(
-      user.email,
-      token,
-      "Email Verification",
-      "verify your email",
-      "verifyemail"
-    );
-    user.verificationEmailToken.token = token;
-
+    sendOtp(user.email)
+  
     await user.save({ validateBeforeSave: false });
-    return res.status(401).json({
+    return res.status(301).json({
       message: "Please verify your email",
+      requiresOtp: true ,
+      emailVerify:true
     });
   }
 
@@ -264,15 +249,11 @@ const changeEmail = async (req, res) => {
   user.isVerified = false;
   user.email = newEmail;
   user.save({ validateBeforeSave: false });
-  sendVerificationEmail(
-    newEmail,
-    emailToken,
-    "verify your email",
-    "verify your email",
-    "verifyemail"
-  );
+ sendOtp(newEmail);
   res.status(200).json({
-    message: "verification email sent to new email",
+    message: "otp sent to new email",
+    requiresOtp: true ,
+    emailVerify:true
   });
 };
 const toggleProfileVisiblity = async (req, res) => {
@@ -335,7 +316,7 @@ const handleRequest = async (req, res) => {
 };
 
 const verifyOtp = async (req, res) => {
-  const { identifier, otp, trustDevice } = req.body;
+  const { identifier, otp, trustDevice ,emailVerify } = req.body;
 
   if (!identifier) {
     return res.status(400).json({ message: "please provide unique credential" });
@@ -356,6 +337,7 @@ const verifyOtp = async (req, res) => {
   if (user.otp.toString() !== otp.toString()) {
     return res.status(400).json({ message: "invalid otp" });
   }
+
   const accessToken = generateJWT(user._id, trustDevice ? "30d" : "1d");
   const options = {
     httpOnly: true,
@@ -366,6 +348,7 @@ const verifyOtp = async (req, res) => {
 
   user.otp = null;
   user.passwordSchema.attempts = 0; // Reset attempts on successful login
+  if(emailVerify) user.isVerified=true
   await user.save({ validateBeforeSave: false });
   return res.status(200).cookie("AccessToken", accessToken, options).json({
     message: "Successfully logged in",
@@ -415,175 +398,20 @@ const getNotifications = async (req, res) => {
 };
 
 const homePage = async (req, res) => {
-  const user = req.user;
-  const nillFollowing = await UserProfile.findOne({
-    follower: user?._id,
-    requestStatus: "accepted",
-  });
+  try {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-  if (nillFollowing) {
-    const feedPosts = await User.aggregate([
-      {
-        $match: {
-          username: user.username,
-        },
-      },
-      {
-        $lookup: {
-          from: "userprofiles",
-          localField: "_id",
-          foreignField: "follower",
-          as: "following",
-        },
-      },
-      {
-        $addFields: {
-          following: {
-            $filter: {
-              input: "$following",
-              as: "following",
-              cond: { $eq: ["$$following.requestStatus", "accepted"] },
-            },
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "posts",
-          localField: "following.profile",
-          foreignField: "publisher",
-          as: "postList",
-        },
-      },
-      {
-        $set: {
-          postList: {
-            $sortArray: {
-              input: "$postList",
-              sortBy: { createdAt: -1 },
-            },
-          },
-        },
-      },
-      {
-        $addFields: {
-          "postList.postDetails": {
-            _id: "$postList._id",
-            post: "$postList.post",
-            title: "$postList.title",
-          },
-        },
-      },
-      {
-        $unwind: {
-          path: "$postList",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "postList.publisher",
-          foreignField: "_id",
-          as: "publisherDetails",
-        },
-      },
-      { $unwind: "$publisherDetails" },
-      {
-        $lookup: {
-          from: "likes",
-          localField: "postList._id",
-          foreignField: "post",
-          as: "likes",
-        },
-      },
-      {
-        $lookup: {
-          from: "comments",
-          let: { postId: "$postList._id" },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$post", "$$postId"] },
-              },
-            },
-            {
-              $lookup: {
-                from: "users",
-                localField: "commenter",
-                foreignField: "_id",
-                as: "commenterDetails",
-              },
-            },
-            { $unwind: "$commenterDetails" },
-            {
-              $project: {
-                _id: 1,
-                comment: 1,
-                commenterDetails: {
-                  username: "$commenterDetails.username",
-                  profilePic: "$commenterDetails.profilePic",
-                },
-              },
-            },
-          ],
-          as: "comments",
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          username: { $first: "$username" },
-          profilePic: { $first: "$profilePic" },
-          postList: {
-            $push: {
-              postDetails: {
-                _id: "$postList._id",
-                post: "$postList.post",
-                title: "$postList.title",
-              },
-
-              likesCount: { $size: "$likes" },
-              commentsCount: { $size: "$comments" },
-              publisherDetails: {
-                username: "$publisherDetails.username",
-                profilePic: "$publisherDetails.profilePic",
-              },
-              comments: "$comments",
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          postList: {
-            $arrayToObject: {
-              $map: {
-                input: { $range: [0, { $size: "$postList" }] },
-                as: "index",
-                in: {
-                  k: {
-                    $concat: ["P", { $toString: "$$index" }],
-                  },
-                  v: { $arrayElemAt: ["$postList", "$$index"] },
-                },
-              },
-            },
-          },
-        },
-      },
-    ]);
-
-    return res.status(200).json({
-      success: true,
-      feedPosts: feedPosts[0].postList,
+    const hasFollowing = await UserProfile.exists({
+      follower: user?._id,
+      requestStatus: "accepted",
     });
-  } else if (!nillFollowing) {
-    const feedPosts = await Post.aggregate([
-      { $sample: { size: 50 } },
-      { $sort: { createdAt: -1 } },
 
+    const commonPipeline = [
+      { $skip: skip },
+      { $limit: limit },
       {
         $lookup: {
           from: "users",
@@ -593,8 +421,6 @@ const homePage = async (req, res) => {
         },
       },
       { $unwind: "$publisherDetails" },
-
-      // Get likes count
       {
         $lookup: {
           from: "likes",
@@ -603,8 +429,6 @@ const homePage = async (req, res) => {
           as: "likes",
         },
       },
-
-      // Get comments with user details
       {
         $lookup: {
           from: "comments",
@@ -619,51 +443,116 @@ const homePage = async (req, res) => {
                 as: "commenterDetails",
               },
             },
-            {
-              $unwind: {
-                path: "$publisherDetails",
-                preserveNullAndEmptyArrays: true,
-              },
-            },
-            {
-              $project: {
-                _id: 1,
-                comment: 1,
-                commenterDetails: {
-                  username: "$commenterDetails.username",
-                  profilePic: "$commenterDetails.profilePic",
-                },
-              },
-            },
+           
           ],
           as: "comments",
         },
       },
-
-      // Final reshaping
+      {
+        $addFields: {
+          currentUserId: user._id,
+        },
+      },
       {
         $project: {
           _id: 0,
           postDetails: {
             _id: "$_id",
-            post: "$post",
+            content: "$content",
             title: "$title",
+            description: "$description",
           },
           likesCount: { $size: "$likes" },
           commentsCount: { $size: "$comments" },
-          comments: "$comments",
           publisherDetails: {
             username: "$publisherDetails.username",
             profilePic: "$publisherDetails.profilePic",
           },
+          isLiked: {
+            $in: [
+              "$currentUserId",
+              {
+                $map: {
+                  input: "$likes",
+                  as: "like",
+                  in: "$$like.likedBy",
+                },
+              },
+            ],
+          },
         },
       },
-    ]);
+    ];
+
+    let feedPosts;
+
+    if (hasFollowing) {
+      const userFeed = await User.aggregate([
+        { $match: { username: user.username } },
+        {
+          $lookup: {
+            from: "userprofiles",
+            localField: "_id",
+            foreignField: "follower",
+            as: "following",
+          },
+        },
+        {
+          $addFields: {
+            following: {
+              $filter: {
+                input: "$following",
+                as: "f",
+                cond: { $eq: ["$$f.requestStatus", "accepted"] },
+              },
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "posts",
+            localField: "following.profile",
+            foreignField: "publisher",
+            as: "postList",
+          },
+        },
+        {
+          $set: {
+            postList: {
+              $sortArray: {
+                input: "$postList",
+                sortBy: { createdAt: -1 },
+              },
+            },
+          },
+        },
+        { $unwind: { path: "$postList", preserveNullAndEmptyArrays: true } },
+        {
+          $replaceRoot: { newRoot: "$postList" },
+        },
+        ...commonPipeline,
+      ]);
+
+      feedPosts = userFeed;
+    } else {
+      feedPosts = await Post.aggregate([
+        { $sort: { createdAt: -1 } },
+        ...commonPipeline,
+      ]);
+    }
+
     return res.status(200).json({
       success: true,
-      feedPosts: feedPosts,
-      message: "No following found, showing random posts",
+      feedPosts,
+      page,
+      limit,
+      message: hasFollowing
+        ? "Showing posts from followed users"
+        : "No following found, showing random posts",
     });
+  } catch (error) {
+    console.error("Error in homePage controller:", error);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 };
 export {

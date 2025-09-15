@@ -7,6 +7,7 @@ import { useContext, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
+import OtpComponent from "@/components/OtpComponent";
 
 function Signup() {
   //const navigate = useNavigate();
@@ -19,6 +20,7 @@ function Signup() {
   const [previewPic, setPreviewPic] = useState("");
   const [selectedPic, setSelectedPic] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const[otpPageOpen,setOtpPageOpen] =useState(false)
   const handlePickPhoto = () => {
     fileInputRef.current?.click();
   };
@@ -40,6 +42,7 @@ function Signup() {
       .post(`${BACKENDURL}/user/signup`, formData, { withCredentials: true })
       .then(() => {
         setLoading(false);
+        setOtpPageOpen(true)
         // navigate("/verifyEmail");
       })
       .catch((_error) => {
@@ -55,7 +58,10 @@ function Signup() {
       setPreviewPic(URL.createObjectURL(file)); // create preview URL
     }
   };
-  return (
+  if (otpPageOpen) {
+    return (<OtpComponent identifier={email} setOtpSend={setOtpPageOpen} emailVerify={true}/>)
+  }
+  else return (
     <div
       className={`w-screen min-h-screen flex justify-center items-center bg-neutral-300 ${
         loading ? "opacity-75" : ""

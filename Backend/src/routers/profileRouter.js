@@ -10,7 +10,7 @@ import { getUserProfile } from "../controllers/profile.controller.js";
 import {
   newPosts,
   deletePost,
-  getSinglePost,
+  getSinglePostComments,
 } from "../controllers/posts.controller.js";
 import { toggleLike } from "../controllers/posts.controller.js";
 import { addComment, deleteComments } from "../controllers/posts.controller.js";
@@ -24,7 +24,7 @@ router.route("/post").post(
   verifyUser,
   upload.fields([
     {
-      name: "post",
+      name: "content",
       maxCount: 1,
     },
   ]),
@@ -43,5 +43,5 @@ router.route("/:postId/addComment").post(verifyUser, addComment);
 router.route("/deleteComment/:commentId").delete(verifyUser, deleteComments);
 
 router.route("/:username/toggleBlock").post(verifyUser, toggleBlock);
-router.route("/getSinglePost/:postId").get(verifyUser, getSinglePost);
+router.route("/getSinglePostComments/:postId").get(verifyUser, getSinglePostComments);
 export default router;

@@ -3,14 +3,14 @@ const postSchema = new Schema(
   {
     title: {
       type: String,
-      default: () => new Date().toString(),
+      default:Date().toString()
     },
     description :{
       type:String,
     },
-    content: {
+    content:{
       type: String,
-      required: true,
+    
     },
     publisher: {
       type: mongoose.Types.ObjectId,
