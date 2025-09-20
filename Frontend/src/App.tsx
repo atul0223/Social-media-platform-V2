@@ -4,7 +4,6 @@ import Login from "./pages/Login.js";
 import Signup from "./pages/SignUp.js";
 import ForgotPass from "./pages/ForgotPass.js";
 
-import Home from "./pages/home.js";
 import Homepage from "./pages/Homepage.js";
 function App() {
    return (

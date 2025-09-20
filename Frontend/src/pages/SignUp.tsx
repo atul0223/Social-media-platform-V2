@@ -3,14 +3,14 @@ import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-w
 import UserContext from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { BACKENDURL } from "@/config";
-import { useContext, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
 import OtpComponent from "@/components/OtpComponent";
 
 function Signup() {
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,6 +51,21 @@ function Signup() {
       });
     console.log(res);
   };
+  const getUser = async () => {
+    setLoading(true);
+    await axios
+      .get(`${BACKENDURL}/user/getUser`, { withCredentials: true })
+      .then(() => {
+        navigate("/homepage");
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    getUser();
+  }, []);
   const handleFileChange = (e: any) => {
     const file = e.target.files[0];
     if (file) {

@@ -3,26 +3,12 @@ import Loading from "@/components/Loading";
 
 import { BACKENDURL } from "@/config";
 import UserContext from "@/context/UserContext";
+import type { PostType } from "@/Types/Types";
 import axios from "axios";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 export default function Homepage() {
-  type PostType = {
-    comments: [];
-    commentsCount: number;
-    likesCount: number;
-    postDetails: {
-      _id: string;
-      content: string;
-      description: string;
-      title: string;
-    };
-    publisherDetails: {
-      username: string;
-      profilePic: string;
-    };
-  };
 
   const [posts, setPosts] = useState<PostType[]>([]);
 
@@ -74,23 +60,13 @@ export default function Homepage() {
   return (
 
      
-      <div className="h-full  max-w-screen  flex flex-wrap justify-center xl:p-10"> <Loading />
-        <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:pl-30 xl:pr-30   gap-3.5 sm:gap-5 h-full  ">
-         
+      <div className="h-full  max-w-screen  flex flex-wrap justify-center xl:p-10 p-3 "> <Loading />
+            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:pl-30 xl:pr-30   gap-3.5 sm:gap-5 h-full  ">
+   
+       
             {posts.map(
               (
-                postItem: {
-                  comments: [];
-                  commentsCount: number;
-                  likesCount: number;
-                  postDetails: {
-                    _id: string;
-                    content: string;
-                    description: string;
-                    title: string;
-                  };
-                  publisherDetails: { username: string; profilePic: string };
-                },
+                postItem:PostType,
                 index
               ) => {
                 const isLast = index === posts.length - 1;
@@ -107,7 +83,7 @@ export default function Homepage() {
               }
             )}
           </div>
-        </div>
+      </div>
   
    
   );

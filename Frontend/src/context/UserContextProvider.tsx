@@ -3,7 +3,7 @@ import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
 export default function UserContextProvider({ children }: any) {
-   const [singlePostopen, setsinglePostOpen] = useState(false);
+  const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentUserDetails, setCurrentUserDetails] = useState({});
   const [selectedChat, setSelectedChat] = useState([]);
@@ -63,7 +63,7 @@ export default function UserContextProvider({ children }: any) {
    useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 639px)');
     setIsSmallScreen(mediaQuery.matches);
-
+    fetchCurrentUser()
     const handler = (e:any) => setIsSmallScreen(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
@@ -120,7 +120,8 @@ export default function UserContextProvider({ children }: any) {
         messages,
         setMessages,
         isSmallScreen,
-        isCreatingGroup,setIsCreatingGroup
+        isCreatingGroup,setIsCreatingGroup,
+        
       }}
     >
       {children}

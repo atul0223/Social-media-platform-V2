@@ -1,7 +1,7 @@
 import { BACKENDURL } from "@/config";
 import UserContext from "@/context/UserContext";
 import axios from "axios";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
 import { Button } from "./ui/button";
@@ -44,7 +44,21 @@ export default function OtpComponent({
         }
       });
   };
-
+  const getUser = async () => {
+    setLoading(true);
+    await axios
+      .get(`${BACKENDURL}/user/getUser`, { withCredentials: true })
+      .then(() => {
+        navigate("/homepage");
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    getUser();
+  }, []);
   return (
     <div
       className={`w-screen min-h-screen flex justify-center items-center bg-neutral-300 ${
