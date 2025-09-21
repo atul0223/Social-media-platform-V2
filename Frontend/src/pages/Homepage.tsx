@@ -47,6 +47,7 @@ export default function Homepage() {
         }
 
         setPosts((prev) => [...prev, ...res.data.feedPosts]);
+        setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);
       } catch (err) {
         console.error("Error fetching posts:", err);
       } finally {
@@ -60,8 +61,8 @@ export default function Homepage() {
   return (
 
      
-      <div className="h-full  max-w-screen  flex flex-wrap justify-center xl:p-10 p-3 "> <Loading />
-            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:pl-30 xl:pr-30   gap-3.5 sm:gap-5 h-full  ">
+      <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-3 "> <Loading />
+            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  xl:px-5  gap-3.5 sm:gap-5 h-full  ">
    
        
             {posts.map(

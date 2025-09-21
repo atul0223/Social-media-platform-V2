@@ -2,10 +2,16 @@ import { useState ,useEffect} from "react";
 import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
+import type { CurrentUserDetails } from "@/Types/Types";
 export default function UserContextProvider({ children }: any) {
   const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentUserDetails, setCurrentUserDetails] = useState({});
+  const [currentUserDetails, setCurrentUserDetails] = useState<CurrentUserDetails>({
+      _id:"",
+      username:"",
+      email:"",
+      fullName:""
+  });
   const [selectedChat, setSelectedChat] = useState([]);
   const [messages, setMessages] = useState([]);
   const[isCreatingGroup,setIsCreatingGroup]=useState(false)

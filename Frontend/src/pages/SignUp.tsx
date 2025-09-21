@@ -102,7 +102,7 @@ function Signup() {
               <img
                 src="edit.png"
                 alt="Edit"
-                className="fixed w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
+                className="absolute w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
               />
             </div>
           </div>

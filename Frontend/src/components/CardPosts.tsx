@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useCallback, useRef } from "react";
 import UserContext from "../context/UserContext";
 import { BACKENDURL } from "../config";
 import { useNavigate } from "react-router-dom";
@@ -29,7 +29,9 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
   const postItem: PostType = props.postItem;
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<CommentType[]>([]);
+  const [page, setPage] = useState(1);
+  const limit = 6;
   const [activePost, setActivePost] = useState<PostType>({
     isLiked: false,
     commentsCount: 0,
@@ -49,7 +51,20 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
   const [likeLoading, setLikeLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [commentsCount, setCommentsCount] = useState(0);
-
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const bottomRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [hasMore]
+  );
   const {
     singlePostopen,
     setsinglePostOpen,
@@ -70,7 +85,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
   const handleAddComment = async (postId: string) => {
     try {
       setLikeLoading(true);
-      await axios.post(
+      const res = await axios.post(
         `${BACKENDURL}/profile/${postId}/addComment`,
         {
           inputComment: newComment,
@@ -78,8 +93,17 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
         { withCredentials: true }
       );
       setCommentsCount((prev) => prev + 1);
+
+      const newCommentAdd: CommentType = {
+        _id: res.data._id,
+        comment: newComment,
+        commenterDetails: {
+          username: currentUserDetails.username,
+          profilePic: currentUserDetails.profilePic,
+        },
+      };
+      setComments((prev) => [newCommentAdd, ...prev]);
       setNewComment("");
-      fetchPostDetails(activePost);
     } catch (err) {
       console.error("Toggle like failed:", err);
     }
@@ -92,7 +116,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
         withCredentials: true,
       });
       setCommentsCount((prev) => prev - 1);
-      fetchPostDetails(activePost);
+      setComments((prev) => prev.filter((comment) => comment._id !== cId));
     } catch (err) {
       console.error("Toggle like failed:", err);
     }
@@ -116,21 +140,29 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
     }
     setLikeLoading(false);
   };
-  
-  const fetchPostDetails = async (singlePost: PostType) => {
+
+  const fetchComments = async (singlePost: PostType) => {
     try {
       const res = await axios.get(
-        `${BACKENDURL}/profile/getSinglePostComments/${singlePost.postDetails._id}`,
+        `${BACKENDURL}/profile/getSinglePostComments/${singlePost.postDetails._id}?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
         }
       );
+      if (res.data.comments.length < limit) {
+        setHasMore(false);
+      }
 
-      setComments(res.data.comments);
-    } catch (error) {
-      console.error("Fetch post details failed:", error);
+      setComments((prev) => [...prev, ...res.data.comments]);
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     }
   };
+  useEffect(() => {
+    if (activePost.postDetails._id) {
+      fetchComments(activePost);
+    }
+  }, [page, activePost]);
   const handleOpenModel = async (singlePost: PostType) => {
     try {
       setsinglePostOpen(true);
@@ -139,7 +171,6 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
       setIsliked(singlePost.isLiked);
       setLikesCount(singlePost.likesCount);
       setCommentsCount(singlePost.commentsCount);
-      await fetchPostDetails(singlePost);
     } catch (error) {
       console.error("Delete post failed:", error);
     }
@@ -184,7 +215,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
           />
         </div>
         <div className="w-full h-full border-2 border-zinc-200 rounded-3xl shadow-2xl shadow-black sm:flex justify-center gap-5 md:gap-0 overflow-y-scroll sm:overflow-y-visible">
-          <div className=" sm:rounded-3xl rounded-t-3xl w-full md:h-3/4 h-2/3 border-2 md:ml-20 md:mr-10 lg:ml-30 lg-mr-10 sm:ml-10 sm:mt-10 xl:ml-40 xl-mr-10 border-gray-300 grid grid-rows-12 shadow-2xl shadow-blue-100">
+          <div className=" sm:rounded-3xl rounded-t-3xl w-full md:h-3/4 h-2/3 border-2 md:ml-20 md:mr-10 lg:ml-30 lg-mr-10 sm:ml-10 sm:mt-10 xl:ml-40 xl-mr-10 border-gray-300 grid grid-rows-12 sm:shadow-2xl shadow-gray-100 bg-neutral-200">
             <div
               className=" h-10 rounded-full m-3 flex gap-2 row-span-1"
               onClick={() => {
@@ -230,90 +261,109 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
               </div>
             </div>
           </div>
-
-          <div
-            className="  sm:rounded-4xl rounded-b-4xl w-full h-full max-h-2/3 border-2 sm:mt-10 sm:mr-10 lg:mr-30 border-gray-300 overflow-y-scroll  shadow-2xl shadow-blue-100"
-            style={{
-              scrollbarWidth: "none", // Firefox
-              msOverflowStyle: "none", // IE 10+
-            }}
-          >
-            <div className="sticky flex h-20 w-full items-baseline px-6 py-3  gap-3 border-b-2 border-b-gray-200 ">
-              <input
-                type="text"
-                className="h-12 w-full rounded-3xl border-2 p-3 border-neutral-400"
-                placeholder="Add comment"
-                value={newComment}
-                onChange={(e) => {
-                  setNewComment(e.target.value);
-                }}
-                autoFocus
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        handleAddComment(activePost.postDetails._id)
-                      }
-                    }}
-              />
-              <Button
-                className="h-10 cursor-pointer"
-                onClick={() => handleAddComment(activePost.postDetails._id)}
-                
-              >
-                Post
-              </Button>
+          <div className="w-full h-full sm:mr-10 lg:mr-30">
+            <div
+              className="sm:rounded-xl w-full h-fit max-h-1/5 border-2 sm:mt-10 sm:mr-10 lg:mr-30 border-gray-300 overflow-y-scroll  sm:shadow-2xl shadow-gray-100 p-4 bg-neutral-200"
+              style={{
+                scrollbarWidth: "none", // Firefox
+                msOverflowStyle: "none", // IE 10+
+              }}
+            >
+              <div className="flex gap-1 font-light">
+                <h1 className="font-bold">Title : </h1>
+                <h1>{activePost.postDetails.title}</h1>
+              </div>
+              <div className="flex gap-1 font-light">
+                <h2 className="font-bold">Description : </h2>
+                <p>{activePost.postDetails.description}</p>
+              </div>
             </div>
-            <hr className=" border-neutral-400" />
-            <div className="w-full">
-              {comments.length === 0 ? (
-                <div className="w-full flex justify-center items-center mt-4">
-                  <p className="text-gray-600 text-lg">No comments</p>
-                </div>
-              ) : (
-                <div className="space-y-1 w-full shadow-2xl">
-                  {comments.map((item: CommentType, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col w-full border rounded-2xl bg-neutral-200 p-3 hover:bg-neutral-300"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <img
-                          src={item.commenterDetails.profilePic || "/pic.jpg"}
-                          alt={`${item.commenterDetails.username}'s profile`}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div className="font-bold text-sm text-gray-800 pt-2 flex">
-                          @{item.commenterDetails.username}
+            <div
+              className="  sm:rounded-4xl rounded-b-4xl w-full h-full sm:max-h-2/3 border-2 sm:mt-4 sm:mr-10 lg:mr-30 border-gray-300 overflow-y-scroll sm:shadow-2xl shadow-gray-100 bg-neutral-200"
+              style={{
+                scrollbarWidth: "none", // Firefox
+                msOverflowStyle: "none", // IE 10+
+              }}
+            >
+              <div className="sticky flex h-20 w-full items-baseline px-6 py-3  gap-3 border-b-2 border-b-gray-200 ">
+                <input
+                  type="text"
+                  className="h-12 w-full rounded-3xl border-2 p-3 border-neutral-400"
+                  placeholder="Add comment"
+                  value={newComment}
+                  onChange={(e) => {
+                    setNewComment(e.target.value);
+                  }}
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleAddComment(activePost.postDetails._id);
+                    }
+                  }}
+                />
+                <Button
+                  className="h-10 cursor-pointer"
+                  onClick={() => handleAddComment(activePost.postDetails._id)}
+                >
+                  Post
+                </Button>
+              </div>
+              <hr className=" border-neutral-400" />
+              <div className="w-full">
+                {comments.length === 0 ? (
+                  <div className="w-full flex justify-center items-center mt-4">
+                    <p className="text-gray-600 text-lg">No comments</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1 w-full shadow-2xl">
+                    {comments.map((item: CommentType, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col w-full border rounded-2xl bg-neutral-200 p-3 hover:bg-neutral-300"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img
+                            src={item.commenterDetails.profilePic || "/pic.jpg"}
+                            alt={`${item.commenterDetails.username}'s profile`}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="font-bold text-sm text-gray-800 pt-2 flex">
+                            @{item.commenterDetails.username}
+                            {item.commenterDetails.username ===
+                            activePost.publisherDetails.username ? (
+                              <p className="ml-1">{"  (publisher)"}</p>
+                            ) : (
+                              <></>
+                            )}{" "}
+                          </div>
+
                           {item.commenterDetails.username ===
-                          activePost.publisherDetails.username ? (
-                            <p className="ml-1">{"  (publisher)"}</p>
+                          currentUserDetails.username ? (
+                            <div className="w-full flex justify-end">
+                              <img
+                                src="/delete.png"
+                                alt=""
+                                className="w-5 h-5 cursor-pointer"
+                                onClick={() => {
+                                  handleDeleteComment(item._id);
+                                }}
+                              />
+                            </div>
                           ) : (
                             <></>
-                          )}{" "}
+                          )}
                         </div>
-
-                        {item.commenterDetails.username ===
-                        currentUserDetails.username ? (
-                          <div className="w-full flex justify-end">
-                            <img
-                              src="/delete.png"
-                              alt=""
-                              className="w-5 h-5 cursor-pointer"
-                              onClick={() => {
-                                handleDeleteComment(item._id);
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <></>
+                        <p className="text-sm text-gray-700 break-words whitespace-normal">
+                          {item.comment}
+                        </p>
+                        {index === comments.length - 1 && (
+                          <div ref={bottomRef}></div>
                         )}
                       </div>
-                      <p className="text-sm text-gray-700 break-words whitespace-normal">
-                        {item.comment}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

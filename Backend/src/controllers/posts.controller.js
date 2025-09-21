@@ -141,7 +141,7 @@ const addComment = async (req, res) => {
     return res.status(500).json({ message: "error while creating a comment" });
   return res.status(200).json({
     message: "successfully commented",
-    comment: createComment.comment,
+    _id: createComment._id,
   });
 };
 
