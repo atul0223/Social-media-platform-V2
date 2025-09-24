@@ -25,5 +25,22 @@ export type CurrentUserDetails ={
       _id:string,
       username:string,
       email:string,
-      fullName:string
+      fullName:string,
+      isPrivate:boolean,
+      profilePic:string
+}
+export type Chat ={
+  _id:string,
+  chatName:string,
+  pic:string,
+  latestMessage:{
+    content:string,
+    sender:{username:string,profilePic:string}
+  },
+  users:[{
+    _id:string,
+    username:string,
+    profilePic:string,
+    email:string
+  }]
 }

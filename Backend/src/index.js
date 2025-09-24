@@ -24,12 +24,12 @@ connection().then(() => {
     },
   });
   io.on("connection", (socket) => {
-    console.log("A user connected");
+    
 
     socket.on("joinChat", (chatId) => {
       socket.join(chatId);
       socket.to(chatId).emit("userJoined", { userId: "user-id" });
-      console.log(`User joined group ${chatId}`);
+     
     });
 
     socket.on("sendMessage", ({ chat, content, sender }) => {
@@ -45,10 +45,10 @@ connection().then(() => {
     });
 
     socket.on("disconnect", () => {
-      console.log("User disconnected");
+      
     });
   });
   server.listen(port, () => {
-    console.log(`HTTPS server running on https://localhost:${port}`);
+    console.log(`server running on https://localhost:${port}`);
   });
 });

@@ -9,7 +9,6 @@ import axios from "axios";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 export default function Homepage() {
-
   const [posts, setPosts] = useState<PostType[]>([]);
 
   const [page, setPage] = useState(1);
@@ -28,11 +27,12 @@ export default function Homepage() {
     [hasMore]
   );
 
-  const { setLoading }: any = useContext(UserContext);
+  const { setLoading ,setTabOpen}: any = useContext(UserContext);
 
   const limit = 4;
 
   useEffect(() => {
+    setTabOpen("home")
     const fetchPosts = async () => {
       try {
         setLoading(true);
@@ -47,7 +47,6 @@ export default function Homepage() {
         }
 
         setPosts((prev) => [...prev, ...res.data.feedPosts]);
-        setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);setPosts((prev) => [...prev, ...res.data.feedPosts]);
       } catch (err) {
         console.error("Error fetching posts:", err);
       } finally {
@@ -59,33 +58,24 @@ export default function Homepage() {
   }, [page]);
 
   return (
+    <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-6  pb-20 sm:pb-0">
+      {" "}
+      <Loading />
+      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  xl:px-5  gap-3.5 sm:gap-5 h-full  ">
+        {posts.map((postItem: PostType, index) => {
+          const isLast = index === posts.length - 1;
 
-     
-      <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-3 "> <Loading />
-            <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  xl:px-5  gap-3.5 sm:gap-5 h-full  ">
-   
-       
-            {posts.map(
-              (
-                postItem:PostType,
-                index
-              ) => {
-                const isLast = index === posts.length - 1;
-
-                return (
-                  <div key={postItem.postDetails._id}>
-                    <CardPosts
-                      postItem={postItem}
-                      postKey={postItem.postDetails._id}
-                    />
-                    {isLast && <div ref={bottomRef}></div>}
-                  </div>
-                );
-              }
-            )}
-          </div>
+          return (
+            <div key={postItem.postDetails._id}>
+              <CardPosts
+                postItem={postItem}
+                postKey={postItem.postDetails._id}
+              />
+              {isLast && <div ref={bottomRef}></div>}
+            </div>
+          );
+        })}
       </div>
-  
-   
+    </div>
   );
 }

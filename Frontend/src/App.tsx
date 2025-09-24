@@ -6,6 +6,11 @@ import ForgotPass from "./pages/ForgotPass.js";
 
 import Homepage from "./pages/Homepage.js";
 import { MainLayout } from "./Layout/MainLayout.js";
+import Profile from "./pages/Profile.js";
+import Settings from "./pages/Settings.js";
+import Chat from "./pages/Chat.js";
+import MessagesPage from "./pages/MessagesPage.js";
+import AddPost from "./pages/AddPost.js";
 function App() {
   return (
     <UserContextProvider>
@@ -13,9 +18,22 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/chat/messages" element={<MessagesPage />} />
           <Route path="/forgotPassword" element={<ForgotPass />} />
           <Route element={<MainLayout />}>
             <Route path="/homepage" element={<Homepage />} />
+          </Route>
+          <Route element={<MainLayout />}>
+            <Route path="/new-post" element={<AddPost />} />
+          </Route>
+           <Route element={<MainLayout />}>
+            <Route path="/chat" element={<Chat />} />
+          </Route>
+          <Route element={<MainLayout />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+          <Route element={<MainLayout />}>
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<div>404 - Page Not Found</div>} />
         </Routes>

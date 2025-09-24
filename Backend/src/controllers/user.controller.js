@@ -122,7 +122,10 @@ const changeProfilepic = async (req, res) => {
       return res.status(500).json({ message: "internal server error" });
     }
     const publicId = extractPublicId(req.user?.profilePic);
-    await cloudinary.uploader.destroy(publicId);
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+    
     req.user.profilePic = profilePic?.secure_url;
     await req.user.save({ validateBeforeSave: false });
     return res.status(200).json({
@@ -487,52 +490,50 @@ const homePage = async (req, res) => {
     let feedPosts;
 
     if (hasFollowing) {
-      const userFeed = await User.aggregate([
-        { $match: { username: user.username } },
-        {
-          $lookup: {
-            from: "userprofiles",
-            localField: "_id",
-            foreignField: "follower",
-            as: "following",
-          },
+     const userFeed = await User.aggregate([
+  { $match: { username: user.username } },
+  {
+    $lookup: {
+      from: "userprofiles",
+      localField: "_id",
+      foreignField: "follower",
+      as: "following",
+    },
+  },
+  {
+    $addFields: {
+      following: {
+        $filter: {
+          input: "$following",
+          as: "f",
+          cond: { $eq: ["$$f.requestStatus", "accepted"] },
         },
-        {
-          $addFields: {
-            following: {
-              $filter: {
-                input: "$following",
-                as: "f",
-                cond: { $eq: ["$$f.requestStatus", "accepted"] },
-              },
-            },
-          },
+      },
+    },
+  },
+  {
+    $lookup: {
+      from: "posts",
+      localField: "following.profile",
+      foreignField: "publisher",
+      as: "postList",
+    },
+  },
+  {
+    $set: {
+      postList: {
+        $sortArray: {
+          input: "$postList",
+          sortBy: { createdAt: -1 },
         },
-        {
-          $lookup: {
-            from: "posts",
-            localField: "following.profile",
-            foreignField: "publisher",
-            as: "postList",
-          },
-        },
-        {
-          $set: {
-            postList: {
-              $sortArray: {
-                input: "$postList",
-                sortBy: { createdAt: -1 },
-              },
-            },
-          },
-        },
-        { $unwind: { path: "$postList", preserveNullAndEmptyArrays: true } },
-        {
-          $replaceRoot: { newRoot: "$postList" },
-        },
-        ...commonPipeline,
-      ]);
-
+      },
+    },
+  },
+  { $unwind: { path: "$postList", preserveNullAndEmptyArrays: true } },
+  { $match: { postList: { $type: "object" } } },
+  { $replaceRoot: { newRoot: "$postList" } },
+  ...commonPipeline,
+]);
       feedPosts = userFeed;
     } else {
       feedPosts = await Post.aggregate([

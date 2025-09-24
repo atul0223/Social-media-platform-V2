@@ -8,7 +8,7 @@ const verifyUser = async (req, res, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decodedToken.id).select("_id username fullName profilePic email");
+    const user = await User.findById(decodedToken.id).select("_id username fullName profilePic email profilePrivate blockedUsers");
 
     if (!user) {
       return next(new Error( "Invalid Access Token"));

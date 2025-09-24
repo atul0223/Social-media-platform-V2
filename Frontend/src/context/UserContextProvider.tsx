@@ -1,4 +1,4 @@
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
 import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
@@ -6,16 +6,13 @@ import type { CurrentUserDetails } from "@/Types/Types";
 export default function UserContextProvider({ children }: any) {
   const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [currentUserDetails, setCurrentUserDetails] = useState<CurrentUserDetails>({
-      _id:"",
-      username:"",
-      email:"",
-      fullName:""
-  });
+  const [currentUserDetails, setCurrentUserDetails] =
+    useState<CurrentUserDetails>();
   const [selectedChat, setSelectedChat] = useState([]);
   const [messages, setMessages] = useState([]);
-  const[isCreatingGroup,setIsCreatingGroup]=useState(false)
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [tabOpen, setTabOpen] = useState("home");
   const [targetuser, setTargetUser] = useState({
     isPrivate: false,
     posts: {},
@@ -29,19 +26,18 @@ export default function UserContextProvider({ children }: any) {
     sameUser: false,
     isblocked: false,
   });
-  const accessMessage = async (chatId:string) => {
-
-    setLoading(true)
+  const accessMessage = async (chatId: string) => {
+    setLoading(true);
     const res = await axios.get(`${BACKENDURL}/chat/${chatId}/getMessages`, {
       withCredentials: true,
     });
 
     setMessages(res.data);
 
-    setLoading(false)
+    setLoading(false);
     return res.data;
   };
-  const accessChat = async (userId:string) => {
+  const accessChat = async (userId: string) => {
     const res = await axios.post(
       `${BACKENDURL}/chat/accessChat`,
       { userId1: userId },
@@ -66,20 +62,21 @@ export default function UserContextProvider({ children }: any) {
       console.error("Error fetching user data:", error);
     }
   };
-   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 639px)');
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
     setIsSmallScreen(mediaQuery.matches);
-    fetchCurrentUser()
-    const handler = (e:any) => setIsSmallScreen(e.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
+    fetchCurrentUser();
+    const handler = (e: any) => setIsSmallScreen(e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
   }, []);
 
-  const fetchUser = async (username:string) => {
+  const fetchUser = async (username: string) => {
     try {
       const response = await axios.get(`${BACKENDURL}/profile/${username}`, {
         withCredentials: true,
       });
+   
 
       if (response.status === 200) {
         const data = response.data;
@@ -126,8 +123,10 @@ export default function UserContextProvider({ children }: any) {
         messages,
         setMessages,
         isSmallScreen,
-        isCreatingGroup,setIsCreatingGroup,
-        
+        isCreatingGroup,
+        setIsCreatingGroup,
+        tabOpen,
+        setTabOpen,
       }}
     >
       {children}

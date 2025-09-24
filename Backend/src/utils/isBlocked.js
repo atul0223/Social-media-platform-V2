@@ -2,7 +2,7 @@ import User from "../models/user.model.js"
 
 const isBlockedByTargetUser =async (currentUserId,targetUserId)=>{
     const targetUser = User.findById(targetUserId)
-    if (targetUser.blockedUsers.includes(currentUserId)) {
+    if (targetUser.blockedUsers?.includes(currentUserId)) {
         return true
     }
     else{

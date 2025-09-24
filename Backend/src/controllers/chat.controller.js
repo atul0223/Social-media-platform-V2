@@ -3,7 +3,10 @@ import Chat from "../models/chat.model.js";
 import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 import cloudinayUpload from "../utils/cloudinary.js";
-import { isBlockedByCurrentUser, isBlockedByTargetUser } from "../utils/isBlocked.js";
+import {
+  isBlockedByCurrentUser,
+  isBlockedByTargetUser,
+} from "../utils/isBlocked.js";
 const fetchChats = async (req, res) => {
   const user = req.user;
 
@@ -102,8 +105,7 @@ const accessChat = async (req, res) => {
 
   const userId = new mongoose.Types.ObjectId(userId1);
   if (!userId1) {
-    console.log("UserId param not sent with request");
-    return res.sendStatus(400);
+    return res.Status(400);
   }
   var isChat = await Chat.find({
     isGroupChat: false,
@@ -352,13 +354,8 @@ const getMessages = async (req, res) => {
 };
 const sendMessage = async (req, res) => {
   const { chatId, content } = req.body;
-  const chat =await Chat.findById(chatId)
-  
-  if(!chat.isGroupChat ){
-    if (isBlockedByTargetUser(chat.users[0],chat.users[1]) ||isBlockedByCurrentUser(chat.users[0],chat.users[1])) {
-      return res.status(500).json({message:"something went wrong"})
-    }
-  }
+  const chat = await Chat.findById(chatId);
+
   if (!chatId || !content) {
     return res
       .status(400)

@@ -22,7 +22,10 @@ const getUserProfile = async (req, res) => {
     }
 
     const sameUser = targetUser._id.toString() === user._id.toString();
-    const isBlocked = user?.blockedUsers?.includes(targetUser._id);
+    const isBlocked = user?.blockedUsers?.includes(targetUser._id) || false
+    console.log(isBlocked);
+    
+   
     if (targetUser?.blockedUsers?.includes(user._id)) {
       return res.status(404).json({ message: "user not found" });
     }
@@ -221,7 +224,11 @@ const toggleBlock = async (req, res) => {
   const user = req.user;
 
   if (!username) {
-    return res.status(400).json({ message: "username required" });
+    return res.status(400).json({ message: "Username is required" });
+  }
+
+  if (typeof block !== "boolean") {
+    return res.status(400).json({ message: "Invalid block flag provided" });
   }
 
   const userExists = await User.findOne({ username }).select(
@@ -229,15 +236,16 @@ const toggleBlock = async (req, res) => {
   );
 
   if (!userExists) {
-    return res.status(404).json({ message: "user not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
-  const isBlocked = user.blockedUsers.includes(userExists._id);
+  const isBlocked = user.blockedUsers?.includes(userExists._id);
 
-  if (block === true) {
+  if (block) {
     if (isBlocked) {
-      return res.status(400).json({ message: "already blocked" });
+      return res.status(400).json({ message: "User is already blocked" });
     }
+
     await UserProfile.deleteMany({
       follower: user._id,
       profile: userExists._id,
@@ -247,22 +255,18 @@ const toggleBlock = async (req, res) => {
       $addToSet: { blockedUsers: userExists._id },
     });
 
-    return res.status(200).json({ message: "Successfully blocked" });
-  }
-
-  if (block === false) {
+    return res.status(200).json({ message: "Successfully blocked the user" });
+  } else {
     if (!isBlocked) {
-      return res.status(404).json({ message: "user not found in block list" });
+      return res.status(400).json({ message: "User is not blocked" });
     }
 
     await User.findByIdAndUpdate(user._id, {
       $pull: { blockedUsers: userExists._id },
     });
 
-    return res.status(200).json({ message: "Successfully unblocked" });
+    return res.status(200).json({ message: "Successfully unblocked the user" });
   }
-
-  return res.status(400).json({ message: "Invalid block flag provided" });
 };
 const toggleFollow = async (req, res) => {
   const { username } = req.params;
