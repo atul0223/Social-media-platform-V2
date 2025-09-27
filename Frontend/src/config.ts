@@ -1,1 +1,1 @@
-export const BACKENDURL="https://localhost:3000"
+export const BACKENDURL="https://social-media-platform-saas.onrender.com"
