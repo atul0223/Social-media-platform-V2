@@ -12,6 +12,8 @@ import { FaPlus } from "react-icons/fa";
 import CreateGroup from "../components/CreateGroup.js";
 import socket from "../helper/socket.js";
 import type { Chat, CurrentUserDetails } from "@/Types/Types.js";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip.js";
+
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -32,8 +34,8 @@ export default function Chat() {
   const handleSearch = async (e: any) => {
     setTargetSearch(e.target.value);
     e.target.value !== "" ? setIsSearching(true) : setIsSearching(false);
-    const res = await axios.get(`${BACKENDURL}/home/search`, {
-      params: { query: e.target.value },
+    const res = await axios.get(`${BACKENDURL}/home/search?query=${e.target.value}&&searchType=users`, {
+      
       withCredentials: true,
     });
 
@@ -99,10 +101,19 @@ export default function Chat() {
             />
             <h4 className="font-serif mt-1 ml-3 text-2xl">Chats</h4>
             <div className="w-full h-full flex justify-end items-center mt-2.5 mr-3">
+             
+             <Tooltip>
+            <TooltipTrigger>
               <FaPlus
                 className="w-5 h-5 text-orange-600 cursor-pointer"
                 onClick={() => setIsCreatingGroup(true)}
-              />
+              /> 
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>New Group</p>
+            </TooltipContent>
+          </Tooltip>
+              
             </div>
           </div>
           <hr />

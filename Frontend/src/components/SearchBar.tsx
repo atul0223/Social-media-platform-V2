@@ -41,7 +41,7 @@ export default function SearchBar() {
           onSubmit={() => navigate("/homepage/search")}
         />
 
-        <Link to="/chat" className=" rounded  transition">
+        <Link to="/chat" className=" rounded  transition sm:hidden block">
           <Tooltip>
             <TooltipTrigger>
               <IoChatbubbleEllipses

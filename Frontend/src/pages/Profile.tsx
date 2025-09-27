@@ -4,7 +4,9 @@ import axios from "axios";
 import { BACKENDURL } from "../config";
 import UserContext from "../context/UserContext";
 import Loading from "@/components/Loading";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Profile() {
   const {
@@ -86,11 +88,30 @@ export default function Profile() {
 
   return (
     <>
-      <div className="w-full h-full sm:px-20 md:px-30 xl:px-40 px-4">
+      <div className="w-full h-full sm:px-20 md:px-30 xl:px-40 px-4 select-none">
         <div>
           <Loading />
-
-          <div className="h-100 w-full flex flex-wrap justify-center mt-10 ">
+        <Link
+            to="/settings"
+            className=" z-50  rounded-full mt-4 -mr-3 flex items-center justify-end transition sm:hidden "
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                
+                 <DotLottieReact
+                    src="https://lottie.host/eb923733-8ca0-40f3-bf18-156631181b02/J1zp6Sxyuz.lottie"
+                    loop
+                    autoplay
+                    className="w-17 h-10 cursor-pointer"
+                  />  
+               
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Settings</p>
+              </TooltipContent>
+            </Tooltip>
+          </Link>
+          <div className="h-100 w-full flex flex-wrap justify-center sm:mt-10 ">
             <div className="rounded-full w-45 h-45 overflow-hidden mt-7">
               <img
                 src={targetuser.profilePic || "/pic.jpg"}
@@ -102,8 +123,8 @@ export default function Profile() {
             </div>
             <div className="w-full flex justify-center gap-12">
               <div>{targetuser.postCount} posts</div>
-              <div>{targetuser.followerCount} followers</div>
-              <div>{targetuser.followingCount} following</div>
+              <div className="cursor-pointer hover:underline">{targetuser.followerCount} followers</div>
+              <div className="cursor-pointer hover:underline">{targetuser.followingCount} following</div>
             </div>
 
             {targetuser.sameUser === true ? (
