@@ -6,7 +6,7 @@ import chatRouter from "./routers/chatRouter.js";
 import profileRouter from "./routers/profileRouter.js";
 import homeRouter from "./routers/homeRouter.js";
 const app = express();
-app.use(cors({ origin: "https://loveable-mu.vercel.app/", credentials: true }));
+app.use(cors({ origin: "https://loveable-mu.vercel.app", credentials: true }));
 app.use(json({ limit: "20kb" }));
 app.use(urlencoded({ extended: true, limit: "20kb" }));
 app.use(cookieParser());
