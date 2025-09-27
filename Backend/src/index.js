@@ -7,7 +7,7 @@ import connection from "../src/dataBase/dbConnection.js";
 dotenv.config({
   path: "./.env",
 });
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 connection().then(() => {
   // const options = {
   //   key: fs.readFileSync("localhost-key.pem"),
