@@ -100,7 +100,7 @@ export default function Messages() {
     fetchCurrentUser();
     handleRefresh();
     accessMessage(selectedChat?._id).then(() => moveToLastMsg());
-    socket.emit("joinChat", selectedChat._id);
+    socket.emit("joinChat", selectedChat?._id);
 
     const container = document.getElementById("message-scroll-container");
 
@@ -281,8 +281,12 @@ export default function Messages() {
 
   if (!selectedChat?.chatName && !isSmallScreen) {
     return (
-      <div className="w-full max-h-screen flex justify-center">
-        <img src="/imgg.png" alt="" className="h-180 " />
+      <div className="w-full h-full flex justify-center items-center">
+        <DotLottieReact
+      src="https://lottie.host/c4cd9a75-ebc9-4bf1-b6a2-99bb608d900c/izQVJNhWUM.lottie"
+      loop
+      autoplay
+    />
       </div>
     );
   } else if (isGroupSettingsOn) {
