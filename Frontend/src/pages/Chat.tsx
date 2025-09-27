@@ -51,6 +51,9 @@ export default function Chat() {
     setLoading(false);
   };
   useEffect(() => {
+    if(localStorage.getItem("currentUser")===null){
+      navigate("/")
+    }
     fetchChats();
     socket.on("newMessage", (msg) => {
       chats && (chats.latestMessage = msg.content);

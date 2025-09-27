@@ -7,6 +7,7 @@ import type { PostType } from "@/Types/Types";
 import axios from "axios";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 
 export default function Homepage() {
   const [posts, setPosts] = useState<PostType[]>([]);
@@ -14,6 +15,7 @@ export default function Homepage() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
+  const navigate = useNavigate();
   const bottomRef = useCallback(
     (node: HTMLElement | null) => {
       if (observer.current) observer.current.disconnect();
@@ -29,10 +31,13 @@ export default function Homepage() {
 
   const { setLoading ,setTabOpen}: any = useContext(UserContext);
 
-  const limit = 4;
+  const limit = 30;
 
   useEffect(() => {
     setTabOpen("home")
+    if(localStorage.getItem("currentUser")===null){
+      navigate("/")
+    }
     const fetchPosts = async () => {
       try {
         setLoading(true);
@@ -58,7 +63,8 @@ export default function Homepage() {
   }, [page]);
 
   return (
-    <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-6  pb-20 sm:pb-0">
+    <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-3  pb-20 sm:pb-0 select-none">
+      
       {" "}
       <Loading />
       <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  xl:px-5  gap-3.5 sm:gap-5 h-full  ">

@@ -10,14 +10,14 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import socket from "../helper/socket";
 import { Button } from "./ui/button";
-//import {Lottie} from "react-lottie"
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Messages() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  // const[typing ,setTyping] =useState(false)
-  // const[isTyping ,setIsTyping] =useState(false)
-  // const [previewPic, setPreviewPic] = useState(null);
+  const [typing, setTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
   const handlePickPhoto = () => {
     fileInputRef.current?.click();
   };
@@ -94,7 +94,8 @@ export default function Messages() {
   };
 
   const moveToLastMsg = () =>
-    bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    bottomRef.current?.scrollIntoView({ behavior: "auto" , block: "end",
+});
   useEffect(() => {
     fetchCurrentUser();
     handleRefresh();
@@ -118,6 +119,7 @@ export default function Messages() {
   const [newMsg, setNewMsg] = useState("");
   const [newName, setNewName] = useState("");
   const [isChangingGrroupName, setIsChangingGroupName] = useState(false);
+  const [typingUser, setTypingUser] = useState<any>(null);
   const [isAddingPeople, setIsAddingPeople] = useState(false);
   const selectedChatMetaData = userReturn(selectedChat?.users);
   const profilePic =
@@ -134,8 +136,11 @@ export default function Messages() {
     // If the next message is from a different sender, show the pic
     return currentSender !== previousSender;
   };
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (event: any) => {
     setSendDisabled(true);
+    if (event.key === "Enter" || newMsg.trim() === "") {
+      socket.emit("stop typing", { chatId: selectedChat._id });
+    }
     await axios.post(
       `${BACKENDURL}/chat/sendmessage`,
       { chatId: selectedChat._id, content: newMsg },
@@ -148,6 +153,7 @@ export default function Messages() {
     });
 
     setSendDisabled(false);
+    
     setNewMsg("");
   };
   useEffect(() => {
@@ -170,6 +176,22 @@ export default function Messages() {
     }
   };
   useEffect(() => {
+    socket.on("typing", ({ user ,chatId}) => {
+      if (chatId === selectedChat._id) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 3000);
+      setTypingUser(user);
+      moveToLastMsg();
+      
+   } });
+   socket.on("stop typing", ({ chatId }) => {
+  if (chatId === selectedChat._id) {
+    setIsTyping(false);
+  }
+});
+    socket.on("connected", () => setSocketConnected(true));
     socket.on("newMessage", (msg) => {
       if (msg.chat._id === selectedChat._id) {
         setMessages((prev: any) => [...prev, msg]);
@@ -178,7 +200,11 @@ export default function Messages() {
     });
 
     return () => {
-      socket.off("newMessage"); // Clean up to prevent duplicate listeners
+       socket.off("typing");
+    socket.off("stop typing");
+    socket.off("newMessage");
+    socket.off("connected");
+
     };
   }, [socket, messages]);
 
@@ -227,6 +253,32 @@ export default function Messages() {
       location.reload();
     } catch (error) {}
   };
+  const typingHandler = (e: any) => {
+    setNewMsg(e.target.value);
+
+    if (!socketConnected) return;
+
+    if (!typing) {
+      setTyping(true);
+      const user = {
+        _id: currentUserDetails._id,
+        username: currentUserDetails.username,
+        profilePic: currentUserDetails.profilePic,
+      };
+      socket.emit("typing", { chatId: selectedChat._id, user });
+    }
+    let lastTypingTime = new Date().getTime();
+    var timerLength = 2000;
+    setTimeout(() => {
+      var timeNow = new Date().getTime();
+      var timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLength && typing) {
+        socket.emit("stop typing", selectedChat._id);
+        setTyping(false);
+      }
+    }, timerLength);
+  };
+
   if (!selectedChat?.chatName && !isSmallScreen) {
     return (
       <div className="w-full max-h-screen flex justify-center">
@@ -583,14 +635,32 @@ export default function Messages() {
                 </div>
               );
             })}{" "}
-            <div ref={bottomRef} />
+            {isTyping ? (
+              <div className="flex gap-2 ml-2 w-40 h-fit mt-2">
+                <img
+                  src={typingUser?.profilePic || "/pic.jpg"}
+                  alt=""
+                  className="w-10 h-10 rounded-full z-40"
+                  onClick={() =>
+                    navigate(`/profile?user=${typingUser?.username}`)
+                  }
+                />
+                <DotLottieReact
+                  src="https://lottie.host/cd0594d7-ab62-41fc-8057-cdbdb6f57fcf/cWl7H7sbdy.lottie"
+                  loop
+                  autoplay
+                  className="w-full h-full object-cover -ml-15 -mt-4"
+                />
+              </div>
+            ) : null}
+            <div ref={bottomRef}  style={{ height: "1px" }}/>
           </div>
 
           <form
             action="submit"
             onSubmit={(e) => {
               e.preventDefault();
-              handleSendMessage();
+              handleSendMessage(e);
             }}
           >
             <div className=" absolute bottom-3 flex gap-3 pl-3 sm:w-7/12 sm:pr-0 w-full pr-5 items-center">
@@ -600,7 +670,7 @@ export default function Messages() {
                 placeholder="Type a message"
                 aria-label="Type a message"
                 value={newMsg}
-                onChange={(e) => setNewMsg(e.target.value)}
+                onChange={typingHandler}
                 autoFocus
               />
               <Button

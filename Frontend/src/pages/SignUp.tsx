@@ -64,6 +64,7 @@ function Signup() {
       });
   };
   useEffect(() => {
+   
     getUser();
   }, []);
   const handleFileChange = (e: any) => {

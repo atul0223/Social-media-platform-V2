@@ -112,6 +112,9 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 useEffect(()=>{
   setTabOpen("newpost")
+  if(localStorage.getItem("currentUser")===null){
+      navigate("/")
+    }
 })
   return (
     <div className="min-h-screen bg-gray-50 pb-30 sm:pb-0">
@@ -196,7 +199,7 @@ useEffect(()=>{
           <div className="space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                Pin Details
+                Post Details
               </h2>
 
               <div className="space-y-6">

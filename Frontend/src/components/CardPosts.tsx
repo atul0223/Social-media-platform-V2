@@ -8,6 +8,18 @@ import { Button } from "./ui/button";
 import { GlowingEffect } from "./ui/glowing-effect";
 import type { CommentType, PostType } from "@/Types/Types";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { TbTrash } from "react-icons/tb";
 export function PostsPrivate() {
   return (
     <div className="flex justify-center mt-7 h-52">
@@ -259,6 +271,40 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
                 <img src="/comment.png" alt="" className="cursor-pointer " />
                 <small>{commentsCount}</small>
               </div>
+              {activePost?.publisherDetails.username ===
+              currentUserDetails?.username ? (
+                <div>
+                  <AlertDialog>
+                    <AlertDialogTrigger>
+                      <TbTrash className="w-7 h-7 -mt-1  cursor-pointer" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete this post and remove your data from our
+                          servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() =>
+                            handleDeletePosts(activePost?.postDetails?._id)
+                          }
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
           <div className="w-full h-full sm:mr-10 lg:mr-30">
@@ -371,7 +417,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
     );
   } else {
     return (
-      <div key={`${key}-${postItem.postDetails._id}`}>
+      <div key={`${key}-${postItem?.postDetails?._id}`}>
         {" "}
         <Loading />
         <div className=" shadow-purple-200 shadow-sm relative h-fit rounded-2xl border md:rounded-3xl max-w-screen">
@@ -390,22 +436,11 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
             }}
           >
             <img
-              src={postItem.postDetails.content}
+              src={postItem?.postDetails?.content}
               alt="Post Image"
               className=" rounded-2xl object-fill  group-hover:brightness-75  sm:h-90 sm:w-70 w-40 h-60 "
             />
           </div>
-
-          {postItem.postDetails._id === currentUserDetails._id ? (
-            <div
-              className="absolute top-3 right-3 sm:group-hover:bottom-0 sm:opacity-1 group-hover:opacity-100  rounded-2xl overflow-hidden w-10 h-10 hover:w-11 hover:h-11"
-              onClick={() => handleDeletePosts(postItem.postDetails._id)}
-            >
-              <img src="/delete.png" alt="/delete.png" />
-            </div>
-          ) : (
-            <></>
-          )}
         </div>
       </div>
     );

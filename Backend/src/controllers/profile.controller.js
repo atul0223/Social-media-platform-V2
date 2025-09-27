@@ -23,7 +23,7 @@ const getUserProfile = async (req, res) => {
 
     const sameUser = targetUser._id.toString() === user._id.toString();
     const isBlocked = user?.blockedUsers?.includes(targetUser._id) || false
-    console.log(isBlocked);
+   
     
    
     if (targetUser?.blockedUsers?.includes(user._id)) {
@@ -39,66 +39,97 @@ const getUserProfile = async (req, res) => {
     if (followRelation?.requestStatus === "accepted") requestStatus = "unfollow";
     else if (followRelation?.requestStatus === "pending") requestStatus = "requested";
 
-    const userProfile = await User.aggregate([
-      { $match: { username: username.trim() } },
-      {
-        $lookup: {
-          from: "userprofiles",
-          localField: "_id",
-          foreignField: "profile",
-          as: "followers",
-        },
-      },
-      {
-        $lookup: {
-          from: "userprofiles",
-          localField: "_id",
-          foreignField: "follower",
-          as: "following",
-        },
-      },
-      {
-        $addFields: {
-          followers: {
-            $filter: {
-              input: "$followers",
-              as: "follower",
-              cond: { $eq: ["$$follower.requestStatus", "accepted"] },
-            },
-          },
-          followersCount: { $size: "$followers" },
-          followingCount: { $size: "$following" },
-          isFollowing: {
-            $in: [user._id, { $map: { input: "$followers", as: "f", in: "$$f.follower" } }],
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "posts",
-          localField: "_id",
-          foreignField: "publisher",
-          as: "postList",
-        },
-      },
-      {
-        $addFields: {
-          postsCount: { $size: "$postList" },
-        },
-      },
-      {
-        $project: {
-          username: 1,
-          followersCount: 1,
-          followingCount: 1,
-          isFollowing: 1,
-          profilePic: 1,
-          profilePrivate: 1,
-          postsCount: 1,
-        },
-      },
-    ]);
+  const userProfile = await User.aggregate([
+  { $match: { username: username.trim() } },
 
+  // Filtered followers: users who follow this profile and requestStatus is accepted
+  {
+    $lookup: {
+      from: "userprofiles",
+      let: { userId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$profile", "$$userId"] },
+                { $eq: ["$requestStatus", "accepted"] }
+              ]
+            }
+          }
+        }
+      ],
+      as: "followers"
+    }
+  },
+
+  // Filtered following: users this profile follows and requestStatus is accepted
+  {
+    $lookup: {
+      from: "userprofiles",
+      let: { userId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$follower", "$$userId"] },
+                { $eq: ["$requestStatus", "accepted"] }
+              ]
+            }
+          }
+        }
+      ],
+      as: "following"
+    }
+  },
+
+  {
+    $addFields: {
+      followersCount: { $size: "$followers" },
+      followingCount: { $size: "$following" },
+      isFollowing: {
+        $in: [
+          user._id,
+          {
+            $map: {
+              input: "$followers",
+              as: "f",
+              in: "$$f.follower"
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  {
+    $lookup: {
+      from: "posts",
+      localField: "_id",
+      foreignField: "publisher",
+      as: "postList"
+    }
+  },
+
+  {
+    $addFields: {
+      postsCount: { $size: "$postList" }
+    }
+  },
+
+  {
+    $project: {
+      username: 1,
+      followersCount: 1,
+      followingCount: 1,
+      isFollowing: 1,
+      profilePic: 1,
+      profilePrivate: 1,
+      postsCount: 1
+    }
+  }
+]);
     const profileDetails = userProfile[0];
 
     if (targetUser.profilePrivate && !(await isFollowed(targetUser._id, user._id)) && !sameUser) {
@@ -191,7 +222,7 @@ const getUserProfile = async (req, res) => {
                 $map: {
                   input: "$likes",
                   as: "like",
-                  in: "$$like.liker",
+                  in: "$$like.likedBy",
                 },
               },
             ],

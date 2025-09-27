@@ -11,6 +11,9 @@ import Settings from "./pages/Settings.js";
 import Chat from "./pages/Chat.js";
 import MessagesPage from "./pages/MessagesPage.js";
 import AddPost from "./pages/AddPost.js";
+import Search from "./pages/Search.js";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 function App() {
   return (
     <UserContextProvider>
@@ -23,7 +26,10 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/homepage" element={<Homepage />} />
           </Route>
-          <Route element={<MainLayout />}>
+           <Route element={<MainLayout />}>
+            <Route path="/homepage/search" element={<Search />} />
+          </Route>
+           <Route element={<MainLayout />}>
             <Route path="/new-post" element={<AddPost />} />
           </Route>
            <Route element={<MainLayout />}>
@@ -35,7 +41,11 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/settings" element={<Settings />} />
           </Route>
-          <Route path="*" element={<div>404 - Page Not Found</div>} />
+          <Route path="*" element={<div className="w-screen h-screen"> <DotLottieReact
+      src="https://lottie.host/d1100658-a488-41fe-8e1a-be775a916744/8gqEUKRPxk.lottie"
+      loop
+      autoplay
+    /></div>} />
         </Routes>
       </BrowserRouter>
     </UserContextProvider>

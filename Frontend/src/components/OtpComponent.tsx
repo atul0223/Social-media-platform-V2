@@ -70,12 +70,12 @@ export default function OtpComponent({
         <div>
           <h1 className="text-2xl text-center">Otp send !</h1>{" "}
           <div className="w-full flex justify-center">
-            <DotLottieReact
-              src="https://lottie.host/ba693acc-6e28-4de1-9a5d-3a67afc58ba7/JSY5FwlZdt.lottie"
-              loop
-              autoplay
-              className="w-35 h-35 "
-            />
+           <DotLottieReact
+      src="https://lottie.host/e16fb81b-4fb7-4a83-92e0-ed80c9155b2d/gCmA2YwQfw.lottie"
+      loop
+      autoplay
+      className="w-35 h-35"
+    />
           </div>
         </div>
 

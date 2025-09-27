@@ -24,12 +24,10 @@ connection().then(() => {
     },
   });
   io.on("connection", (socket) => {
-    
-
+    socket.emit("connected");
     socket.on("joinChat", (chatId) => {
       socket.join(chatId);
       socket.to(chatId).emit("userJoined", { userId: "user-id" });
-     
     });
 
     socket.on("sendMessage", ({ chat, content, sender }) => {
@@ -40,12 +38,16 @@ connection().then(() => {
       });
     });
 
-    socket.on("typing", (chatId) => {
-      socket.to(chatId).emit("userTyping", { userId: "user-id" });
-    });
+   socket.on("typing", ({ chatId, user }) => {
+  socket.to(chatId).emit("typing", { user ,chatId});
+});
+socket.on("stop typing", (chatId) => {
+  socket.to(chatId).emit("stop typing", { chatId });
+});
+
 
     socket.on("disconnect", () => {
-      
+    
     });
   });
   server.listen(port, () => {

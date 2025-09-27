@@ -13,6 +13,8 @@ export default function UserContextProvider({ children }: any) {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [tabOpen, setTabOpen] = useState("home");
+  const [isNotiOpen, setIsNotiOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [targetuser, setTargetUser] = useState({
     isPrivate: false,
     posts: {},
@@ -76,7 +78,6 @@ export default function UserContextProvider({ children }: any) {
       const response = await axios.get(`${BACKENDURL}/profile/${username}`, {
         withCredentials: true,
       });
-   
 
       if (response.status === 200) {
         const data = response.data;
@@ -127,6 +128,10 @@ export default function UserContextProvider({ children }: any) {
         setIsCreatingGroup,
         tabOpen,
         setTabOpen,
+        isNotiOpen,
+        setIsNotiOpen,
+        search,
+        setSearch,
       }}
     >
       {children}

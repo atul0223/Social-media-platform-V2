@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import Loading from "../components/Loading";
 import { Switch } from "@/components/ui/switch.js";
 
-
 function Settings() {
   const [isOpen1, setIsOpen1] = useState(false);
   const [isOpen2, setIsOpen2] = useState(false);
@@ -31,6 +30,7 @@ function Settings() {
 
         { withCredentials: true }
       );
+      localStorage.removeItem("currentUser");
       navigate("/");
     } catch (error: any) {
       setMessage(error.response?.data?.message || "Error changing username");
@@ -181,6 +181,9 @@ function Settings() {
 
   useEffect(() => {
     setTabOpen("settings");
+    if (localStorage.getItem("currentUser") === null) {
+      navigate("/");
+    }
     fetchCurrentUser();
     setNewUsername(currentUserDetails?.username || "");
     setNewFullName(currentUserDetails?.fullName || "");
@@ -188,7 +191,7 @@ function Settings() {
   }, []);
   return (
     <div className="max-w-screen min-h-screen bg-neutral-200 xl:pr-20 pl-4 pr-4 flex justify-center pb-20 sm:pb-0 ">
-  <Loading/>
+      <Loading />
       <div className="w-full h-full pb-3">
         <div className="w-full h-full mt-15 font-serif text-black">
           <div className="sm:flex">
@@ -244,11 +247,9 @@ function Settings() {
                       }}
                     />
                   )}
-                  
                 </div>
-                
               </div>
-               <div className="w-full md:mt-60 mt-43">
+              <div className="w-full md:mt-60 mt-43">
                 <div className="flex justify-center mb-1 mr-3">
                   <h5>@ {currentUserDetails?.username}</h5>
                 </div>
@@ -262,8 +263,7 @@ function Settings() {
               </div>
             </div>
             <div className="w-full h-full sm:mt-0  mt-3">
-             
-              <div className="bg-neutral-300 text-black rounded-2xl mb-1">
+              <div className="bg-neutral-300 text-black rounded-2xl mb-1  hover:bg-neutral-400">
                 <div
                   className="w-full h-20 p-4 items-center  cursor-pointer "
                   onClick={() => {
@@ -283,32 +283,33 @@ function Settings() {
                   <div className="input-group">
                     <div className="w-full flex justify-end">{message}</div>
                     <div className="flex">
-                    <input
-                      type="text"
-                      className="bg-white rounded p-2 w-full border-orange-600 border-1 mr-3"
-                      placeholder="New username"
-                      aria-label="new username"
-                      aria-describedby="button-addon2"
-                      autoFocus
-                      onChange={(e) => {
-                        setNewUsername(e.target.value);
-                        handleCheckUserAvailability(e.target.value);
-                      }}
-                      value={newUsername}
-                    />
-                    <button
-                       className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
-                      type="button"
-                      id="button-addon2"
-                      disabled={btnDisabled}
-                      onClick={handleChangeUsername}
-                    >
-                      Update
-                    </button></div>
+                      <input
+                        type="text"
+                        className="bg-white rounded p-2 w-full border-orange-600 border-1 mr-3"
+                        placeholder="New username"
+                        aria-label="new username"
+                        aria-describedby="button-addon2"
+                        autoFocus
+                        onChange={(e) => {
+                          setNewUsername(e.target.value);
+                          handleCheckUserAvailability(e.target.value);
+                        }}
+                        value={newUsername}
+                      />
+                      <button
+                        className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
+                        type="button"
+                        id="button-addon2"
+                        disabled={btnDisabled}
+                        onClick={handleChangeUsername}
+                      >
+                        Update
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-300 text-black rounded-2xl mb-1">
+              <div className="bg-neutral-300 text-black rounded-2xl mb-1  hover:bg-neutral-400">
                 <div
                   className="w-full h-20 p-4 items-center  cursor-pointer"
                   onClick={() => {
@@ -327,29 +328,29 @@ function Settings() {
                 >
                   <div className="input-group">
                     <div className="flex">
-                    <input
-                      type="text"
-                      className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
-                      placeholder="New Fullname"
-                      aria-label="New Full Name"
-                      aria-describedby="button-addon3"
-                      autoFocus
-                      value={newFullName}
-                      onChange={(e) => setNewFullName(e.target.value)}
-                    />
-                    <button
-                      className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
-                      type="button"
-                      id="button-addon3"
-                      onClick={handleFullNameChange}
-                    >
-                      Update
-                    </button>
+                      <input
+                        type="text"
+                        className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
+                        placeholder="New Fullname"
+                        aria-label="New Full Name"
+                        aria-describedby="button-addon3"
+                        autoFocus
+                        value={newFullName}
+                        onChange={(e) => setNewFullName(e.target.value)}
+                      />
+                      <button
+                        className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
+                        type="button"
+                        id="button-addon3"
+                        onClick={handleFullNameChange}
+                      >
+                        Update
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-300 text-black rounded-2xl mb-1">
+              <div className="bg-neutral-300 text-black rounded-2xl mb-1 hover:bg-neutral-400">
                 <div
                   className="w-full h-20 p-4 items-center  cursor-pointer"
                   onClick={() => {
@@ -369,29 +370,29 @@ function Settings() {
                   <div className="input-group">
                     <div className="w-full flex justify-end">{message}</div>
                     <div className="flex">
-                    <input
-                      type="email"
-                      className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
-                      placeholder="New email"
-                      aria-label="New Email"
-                      aria-describedby="button-addon4"
-                      autoFocus
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                    />
-                    <button
-                      className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
-                      type="button"
-                      id="button-addon4"
-                      onClick={handleEmailChange}
-                    >
-                      Update
-                    </button>
+                      <input
+                        type="email"
+                        className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
+                        placeholder="New email"
+                        aria-label="New Email"
+                        aria-describedby="button-addon4"
+                        autoFocus
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                      />
+                      <button
+                        className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
+                        type="button"
+                        id="button-addon4"
+                        onClick={handleEmailChange}
+                      >
+                        Update
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-300 text-black rounded-2xl mb-1">
+              <div className="bg-neutral-300 text-black rounded-2xl mb-1 hover:bg-neutral-400">
                 <div
                   className="w-full h-20 p-4 items-center  cursor-pointer"
                   onClick={() => {
@@ -410,28 +411,28 @@ function Settings() {
                 >
                   <div className="input-group mb-2">
                     <div className="flex">
-                    <input
-                      type="password"
-                      className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
-                      placeholder="New Password"
-                      aria-label="New Password"
-                      aria-describedby="button-addon5"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                    <button
-                      className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
-                      type="button"
-                      id="button-addon5"
-                      onClick={handlePasswordChange}
-                    >
-                      Update
-                    </button>
+                      <input
+                        type="password"
+                        className="bg-white rounded p-2 w-11/12 border-orange-600 border-1 mr-3"
+                        placeholder="New Password"
+                        aria-label="New Password"
+                        aria-describedby="button-addon5"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <button
+                        className="bg-orange-600 px-3 py-2 cursor-pointer rounded "
+                        type="button"
+                        id="button-addon5"
+                        onClick={handlePasswordChange}
+                      >
+                        Update
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-300 text-black rounded-2xl">
+              <div className="bg-neutral-300 text-black rounded-2xl  hover:bg-neutral-400">
                 <div
                   className="w-full h-20 p-4 items-center  cursor-pointer"
                   onClick={() => {
@@ -442,22 +443,19 @@ function Settings() {
                 </div>
 
                 <div
-                  className={`pl-4 pr-4 pb-4 transition-all duration-300 ${
+                  className={`pl-4 pr-4 pb-4 transition-all duration-300  ${
                     isOpen6
                       ? "max-h-96 opacity-100 block"
                       : "max-h-0 opacity-0 overflow-hidden hidden"
-                  }`}
+                  } `}
                 >
-                  <div className="form-check form-switch flex">
+                  <div className="form-check form-switch flex ">
                     <Switch
                       className="cursor-pointer mr-2"
                       checked={currentUserDetails?.profilePrivate || false}
                       onClick={() => handleProfileVisiblity()}
                     />
-                    <p
-                      className="-mt-0.5"
-                     
-                    >
+                    <p className="-mt-0.5">
                       Current Status{" ("}
                       {currentUserDetails?.profilePrivate === true ? (
                         <>Private</>
@@ -470,7 +468,7 @@ function Settings() {
                 </div>
               </div>
               <div
-                className="w-full h-20 p-4 items-center  cursor-pointer bg-neutral-300 rounded-2xl mt-1 text-red-700"
+                className="w-full h-20 p-4 items-center  cursor-pointer bg-neutral-300 rounded-2xl mt-1 text-red-700 hover:bg-neutral-400"
                 onClick={() => {
                   handleLogout();
                 }}

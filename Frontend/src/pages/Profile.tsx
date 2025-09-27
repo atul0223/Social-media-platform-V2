@@ -4,7 +4,7 @@ import axios from "axios";
 import { BACKENDURL } from "../config";
 import UserContext from "../context/UserContext";
 import Loading from "@/components/Loading";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Profile() {
   const {
@@ -12,13 +12,12 @@ export default function Profile() {
     fetchUser,
     setTabOpen,
     setLoading,
-    currentUserDetails
+  
   }: any = useContext(UserContext);
-  
-  
-const [searchParams] = useSearchParams();
-const user = searchParams.get("user");
 
+  const [searchParams] = useSearchParams();
+  const user = searchParams.get("user");
+  const navigate = useNavigate();
   const [choice, setChoice] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -44,12 +43,12 @@ const user = searchParams.get("user");
   const toggleBlock = async () => {
     setIsLoading(true);
     try {
-     const res = await axios.post(
+      const res = await axios.post(
         `${BACKENDURL}/profile/${targetuser.username}/toggleBlock`,
         { block: !targetuser.isblocked },
         { withCredentials: true }
       );
-console.log(res.data);
+      console.log(res.data);
 
       await fetchuser();
     } catch (error) {
@@ -76,10 +75,12 @@ console.log(res.data);
   };
 
   useEffect(() => {
-    if (user===currentUserDetails?.username) {
-      setTabOpen("me")
+    if (localStorage.getItem("currentUser") === null) {
+      navigate("/");
     }
-    
+
+    setTabOpen("profile");
+
     fetchuser();
   }, [user]);
 
@@ -88,7 +89,6 @@ console.log(res.data);
       <div className="w-full h-full sm:px-20 md:px-30 xl:px-40 px-4">
         <div>
           <Loading />
-          
 
           <div className="h-100 w-full flex flex-wrap justify-center mt-10 ">
             <div className="rounded-full w-45 h-45 overflow-hidden mt-7">
@@ -119,7 +119,13 @@ console.log(res.data);
                     onClick={toggleFollow}
                     disabled={isLoading}
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-r ${targetuser.requestStatus === "follow"?"from-indigo-500 to-purple-500 ":"from-neutral-500 to-neutral-200 "}rounded-lg `} />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-r ${
+                        targetuser.requestStatus === "follow"
+                          ? "from-indigo-500 to-purple-500 "
+                          : "from-neutral-500 to-neutral-200 "
+                      }rounded-lg `}
+                    />
                     <div className="px-2 bg-transparent rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
                       {targetuser.requestStatus === "requested"
                         ? "Requested"
@@ -135,7 +141,13 @@ console.log(res.data);
                   onClick={toggleBlock}
                   disabled={isLoading}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${targetuser.isblocked?" from-neutral-500 to-neutral-400":" from-red-500 to-orange-400"} 500 rounded-lg `} />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-r ${
+                      targetuser.isblocked
+                        ? " from-neutral-500 to-neutral-400"
+                        : " from-red-500 to-orange-400"
+                    } 500 rounded-lg `}
+                  />
                   <div className="px-2 bg-transparent rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
                     {targetuser.isblocked ? "Unblock" : "Block"}
                   </div>

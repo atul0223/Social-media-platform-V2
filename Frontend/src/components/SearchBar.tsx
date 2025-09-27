@@ -1,21 +1,21 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { PlaceholdersAndVanishInput } from "./ui/placeholders-and-vanish-input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import UserContext from "@/context/UserContext";
+import { IoChatbubbleEllipses } from "react-icons/io5";
 
 export default function SearchBar() {
-  const [search, setSearch] = useState("");
-  const { currentUserDetails, tabOpen }: any = useContext(UserContext);
-  if (tabOpen === "home") {
+  const { tabOpen, setSearch }: any = useContext(UserContext);
+  const navigate = useNavigate();
+  if (tabOpen === "search" || tabOpen === "home") {
     return (
-      <div className="w-full h-15 flex justify-center items-center sm:mt-2 px-3 gap-3 mb-3 sm:mb-0">
+      <div className="w-full h-15 flex justify-center items-center mt-2 px-3 gap-3 mb-3 sm:mb-0 sticky top-0 bg-white z-10">
         <PlaceholdersAndVanishInput
           placeholders={[
-            "Serach",
+            "Search",
             "Find anyone ?",
             "Explore new",
-            "trending",
             "Trending reels 🔥",
             "Top creators near you 📍",
             "Viral memes of the week 😂",
@@ -38,26 +38,24 @@ export default function SearchBar() {
             "Weekend plans near you 🗓️",
           ]}
           onChange={(e) => setSearch(e.target.value)}
-          onSubmit={() => {}}
+          onSubmit={() => navigate("/homepage/search")}
         />
-        <Link
-          to={`/profile?user=${currentUserDetails?.username}`}
-          className="mt-2.5 "
-        >
+
+        <Link to="/chat" className=" rounded  transition">
           <Tooltip>
             <TooltipTrigger>
-              <img
-                src={currentUserDetails?.profilePic || "/pic.jpg"}
-                alt=""
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full cursor-pointer border-2"
+              <IoChatbubbleEllipses
+                className="text-gray-600 w-9 h-9 cursor-pointer"
               />
             </TooltipTrigger>
             <TooltipContent>
-              <p>{currentUserDetails?.username}</p>
+              <p>Messages</p>
             </TooltipContent>
           </Tooltip>
-        </Link>{" "}
+        </Link>
       </div>
     );
+  } else {
+    return null;
   }
 }

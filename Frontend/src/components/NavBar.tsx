@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { IoHome } from "react-icons/io5";
-import { IoChatbubbleEllipses, IoNotifications } from "react-icons/io5";
+import { IoChatbubbleEllipses, IoHome ,IoNotifications } from "react-icons/io5";
 import { CiCirclePlus } from "react-icons/ci";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useContext } from "react";
 import UserContext from "@/context/UserContext";
+import { FaSearch } from "react-icons/fa";
 export default function NavBar() {
-  const { tabOpen ,currentUserDetails}: any = useContext(UserContext);
+  const { tabOpen, setIsNotiOpen, currentUserDetails }: any =
+    useContext(UserContext);
 
   return (
     <>
@@ -27,20 +28,34 @@ export default function NavBar() {
               </TooltipContent>
             </Tooltip>
           </Link>
-          <Link to="/chat" className=" rounded  transition">
+          <Link to="/homepage/search" className=" rounded  transition">
             <Tooltip>
               <TooltipTrigger>
-                <IoChatbubbleEllipses
+                <FaSearch
                   className={`${
-                    tabOpen === "chat" ? "text-red-600" : ""
-                  } w-8 h-8 cursor-pointer`}
+                    tabOpen === "search" ? "text-red-600" : ""
+                  } w-7 h-7 cursor-pointer`}
                 />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Messages</p>
+                <p>Find</p>
               </TooltipContent>
             </Tooltip>
           </Link>
+                 <Link to="/chat" className=" rounded  transition">
+          <Tooltip>
+            <TooltipTrigger>
+              <IoChatbubbleEllipses
+                   className={`${
+                    tabOpen === "chat" ? "text-red-600" : ""
+                  } w-8.5 h-8.5 cursor-pointer`}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Messages</p>
+            </TooltipContent>
+          </Tooltip>
+        </Link>
           <Link to="/new-post" className="rounded  transition">
             <Tooltip>
               <TooltipTrigger>
@@ -55,33 +70,41 @@ export default function NavBar() {
               </TooltipContent>
             </Tooltip>
           </Link>
-          <Link to="/notifications" className="rounded  transition">
-            <Tooltip>
-              <TooltipTrigger>
-                <IoNotifications
-                  className={`${
-                    tabOpen === "notifications" ? "text-red-600" : ""
-                  } w-8 h-8 cursor-pointer`}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-          </Link>
-           <Link
+          <Tooltip>
+            <TooltipTrigger>
+              <IoNotifications
+                className={`${
+                  tabOpen === "notifications" ? "text-red-600" : ""
+                } w-8 h-8 cursor-pointer`}
+                onClick={() => {
+                  setIsNotiOpen(true);
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Notifications</p>
+            </TooltipContent>
+          </Tooltip>
+          <Link
             to={`/profile?user=${currentUserDetails?.username}`}
-          
+            className="mt-2.5"
           >
             <Tooltip>
               <TooltipTrigger>
-                <img src={currentUserDetails?.profilePic||"/pic.jpg"} alt="" className={`${tabOpen==="me"?"border-orange-600":""} w-9 h-9 rounded-full cursor-pointer border-2`}/>
+                <img
+                  src={currentUserDetails?.profilePic || "/pic.jpg"}
+                  alt={`Profile picture of ${
+                    currentUserDetails?.username || "user"
+                  }`}
+                  className="w-10 h-10 rounded-full cursor-pointer border-2"
+                />
               </TooltipTrigger>
               <TooltipContent>
                 <p>{currentUserDetails?.username}</p>
               </TooltipContent>
             </Tooltip>
           </Link>
+           
           <Link
             to="/settings"
             className=" absolute bottom-10 rounded  transition"
@@ -113,8 +136,8 @@ export default function NavBar() {
       </aside>
 
       <div className="sm:hidden fixed bottom-0 left-0 w-full  text-neutral-800 bg-white flex justify-center items-center h-16 z-50">
-        <nav className="flex flex-row gap-10">
-          <Link to="/homepage" className="rounded  transition">
+        <nav className="flex flex-row gap-10 justify-center items-center">
+          <Link to="/homepage" className="rounded w-full h-full flex justify-center items-center transition">
             <Tooltip>
               <TooltipTrigger>
                 <IoHome
@@ -128,27 +151,28 @@ export default function NavBar() {
               </TooltipContent>
             </Tooltip>
           </Link>
-          <Link to="/chat" className=" rounded  transition">
+          <Link to="/homepage/search" className="rounded w-full h-full flex justify-center items-center transition">
             <Tooltip>
               <TooltipTrigger>
-                <IoChatbubbleEllipses
+                <FaSearch
                   className={`${
-                    tabOpen === "chat" ? "text-red-600" : ""
-                  } w-7 h-7 cursor-pointer`}
+                    tabOpen === "search" ? "text-red-600" : ""
+                  } w-6 h-6 cursor-pointer mt-0.5`}
                 />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Messages</p>
+                <p>Find</p>
               </TooltipContent>
             </Tooltip>
           </Link>
-          <Link to="/new-post" className="rounded  transition">
+          
+          <Link to="/new-post" className="rounded w-full h-full flex justify-center items-center transition">
             <Tooltip>
               <TooltipTrigger>
                 <CiCirclePlus
                   className={`${
                     tabOpen === "newpost" ? "text-red-600" : ""
-                  } w-7 h-7 cursor-pointer`}
+                  } w-9 h-9 cursor-pointer`}
                 />
               </TooltipTrigger>
               <TooltipContent>
@@ -156,44 +180,43 @@ export default function NavBar() {
               </TooltipContent>
             </Tooltip>
           </Link>
-          <Link to="/notifications" className="rounded  transition">
-            <Tooltip>
-              <TooltipTrigger>
-                <IoNotifications
-                  className={`${
-                    tabOpen === "notifications" ? "text-red-600" : ""
-                  } w-7 h-7 cursor-pointer`}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-          </Link>
-          <Link to="/settings" className="  rounded  transition">
-            <Tooltip>
-              <TooltipTrigger>
-                {tabOpen==="settings"? <DotLottieReact
-                    src="https://lottie.host/eb923733-8ca0-40f3-bf18-156631181b02/J1zp6Sxyuz.lottie"
-                    loop
-                    autoplay
-                   className={`w-7 h-7 ${
-                    tabOpen === "settings" ? "bg-gray-400" : "bg-gray-200"
-                  } rounded-full cursor-pointer`}
-                  />:<DotLottieReact
-                  src="https://lottie.host/eb923733-8ca0-40f3-bf18-156631181b02/J1zp6Sxyuz.lottie"
-                  loop
-                  autoplay
-                  className={`w-7 h-7 ${
-                    tabOpen === "settings" ? "bg-gray-400" : "bg-gray-200"
-                  } rounded-full cursor-pointer `}
-                />}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Settings</p>
-              </TooltipContent>
-            </Tooltip>
-          </Link>
+          <Tooltip >
+            <TooltipTrigger className="rounded w-full h-full flex justify-center items-center transition">
+              <IoNotifications
+                className={`${
+                  tabOpen === "notifications" ? "text-red-600" : ""
+                } w-7 h-7 cursor-pointer `}
+                onClick={() => {
+                  setIsNotiOpen(true);
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Notifications</p>
+            </TooltipContent>
+          </Tooltip>
+         <Link
+          to={`/profile?user=${currentUserDetails?.username}`}
+          className="rounded w-full h-full flex justify-center items-center transition"
+        >
+          <Tooltip>
+            <TooltipTrigger>
+              <img
+                src={currentUserDetails?.profilePic || "/pic.jpg"}
+                alt={`Profile picture of ${
+                  currentUserDetails?.username || "user"
+                }`}
+                className={`${
+                  tabOpen === "profile" ? "text-red-600" : ""
+                } w-7 h-7 cursor-pointer rounded-full `}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{currentUserDetails?.username}</p>
+            </TooltipContent>
+          </Tooltip>
+        </Link>
+
         </nav>
       </div>
     </>

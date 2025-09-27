@@ -51,7 +51,7 @@ const deletePost = async (req, res) => {
     return res.status(403).json({ message: "not authorized for this action" });
   }
 
-  const publicId = extractPublicId(selectedPost.post);
+  const publicId = extractPublicId(selectedPost.content);
 
   const deleted = await Post.findOneAndDelete({ _id: postId });
   if (!deleted)
@@ -229,7 +229,7 @@ const getSinglePostComments = async (req, res) => {
       },
     ]);
 
-    res.status(200).json({ comments: post[0].comments });
+    res.status(200).json({ comments: post[0]?.comments });
   } catch (error) {
     console.error("Error in getSinglePostComments:", error);
     res.status(500).json({ error: "Internal Server Error" });
