@@ -50,7 +50,8 @@ socket.on("stop typing", (chatId) => {
     
     });
   });
-  server.listen(port, () => {
-    console.log(`server running on https://localhost:${port}`);
-  });
+ app.listen(port, "0.0.0.0", () => {
+  console.log(`Server is listening on port ${port}`);
+});
+
 });
