@@ -9,12 +9,12 @@ dotenv.config({
 });
 const port = process.env.PORT;
 connection().then(() => {
-  const options = {
-    key: fs.readFileSync("localhost-key.pem"),
-    cert: fs.readFileSync("localhost.pem"),
-  };
+  // const options = {
+  //   key: fs.readFileSync("localhost-key.pem"),
+  //   cert: fs.readFileSync("localhost.pem"),
+  // };
 
-  const server = https.createServer(options, app);
+  const server = https.createServer( app);
 
   const io = new Server(server, {
     cors: {
