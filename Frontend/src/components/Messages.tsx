@@ -544,9 +544,9 @@ export default function Messages() {
     );
   } else {
     return (
-      <div className="w-full h-screen bg-neutral-100 pb-40 overflow-hidden select-none">
+      <div className="w-full h-screen bg-neutral-100 pb-35">
         <div
-          className={`fixed bottom-20 -right-5 flex justify-end items-center px-10 py-6 ${
+          className={`fixed bottom-15 -right-5 flex justify-end items-center px-10 py-6 ${
             isAtBottom ? "hidden" : "block"
           }`}
         >
@@ -591,7 +591,7 @@ export default function Messages() {
           </h6>
         </div>
         <div
-          className=" w-full h-full overflow-y-scroll mb-10"
+          className=" w-full h-full overflow-y-scroll"
           id="message-scroll-container"
         >
           <div className="w-full flex justify-center ">
