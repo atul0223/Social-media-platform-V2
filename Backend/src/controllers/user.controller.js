@@ -31,8 +31,7 @@ const signup = async (req, res) => {
     return res.status(401).json({ message: "Email already exists" });
   }
   const profilePic = await cloudinaryUpload(localFilePath);
-  
-  const newUser = new User({
+ await User.create({
     username,
     passwordSchema: {
       password,
@@ -102,7 +101,12 @@ const user = await User.findOne({
 };
 const logout = async (req, res) => {
  
-  await res.clearCookie("AccessToken");
+  res.clearCookie("AccessToken", {
+  path: "/",
+  secure: true, 
+  httpOnly: true,
+  sameSite: "None", 
+});
   return res.status(200).json({
     message: "Logout successful",
   });

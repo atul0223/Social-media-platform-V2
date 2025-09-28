@@ -544,9 +544,9 @@ export default function Messages() {
     );
   } else {
     return (
-      <div className="w-full h-screen bg-neutral-100 pb-40">
+      <div className="w-full h-screen bg-neutral-100 pb-40 overflow-hidden select-none">
         <div
-          className={`fixed bottom-35 right-5 flex justify-end items-center px-10 py-6 ${
+          className={`fixed bottom-20 -right-5 flex justify-end items-center px-10 py-6 ${
             isAtBottom ? "hidden" : "block"
           }`}
         >
@@ -591,7 +591,7 @@ export default function Messages() {
           </h6>
         </div>
         <div
-          className=" w-full h-full overflow-y-scroll"
+          className=" w-full h-full overflow-y-scroll mb-10"
           id="message-scroll-container"
         >
           <div className="w-full flex justify-center ">
@@ -667,7 +667,7 @@ export default function Messages() {
               handleSendMessage(e);
             }}
           >
-            <div className=" absolute bottom-0 flex gap-3 pl-3 sm:w-7/12 sm:pr-0 w-full pr-5 items-center">
+            <div className=" fixed bottom-3 flex gap-3 pl-3 sm:w-7/12 sm:pr-0 w-full pr-5 items-center">
               <input
                 className=" form-control mr-sm-2 h-13 bg-white border-orange-200 border-2 w-full rounded-xl px-3 "
                 type="text"
