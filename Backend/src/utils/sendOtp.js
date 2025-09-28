@@ -17,6 +17,8 @@ const sendOtp = async (email) => {
   `;
 
   try {
+    console.log("Sending OTP to:", email);
+    
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
       {
@@ -32,7 +34,7 @@ const sendOtp = async (email) => {
         },
       }
     );
-
+    console.log("OTP sent successfully to:", email);
     await User.findOneAndUpdate(
       { email },
       {
@@ -43,9 +45,13 @@ const sendOtp = async (email) => {
       }
     );
   } catch (error) {
-    console.error("Brevo API email failed:", error?.response?.data || error.message);
-    throw new Error("Failed to send OTP. Please try again later.");
-  }
+  console.error("Brevo API email failed:", {
+    status: error?.response?.status,
+    data: error?.response?.data,
+    headers: error?.response?.headers,
+  });
+  throw new Error("Failed to send OTP. Please try again later.");
+}
 };
 
 export default sendOtp;
