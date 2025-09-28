@@ -379,7 +379,7 @@ export default function Messages() {
                     className="flex-grow border-b border-neutral-800 focus:outline-none "
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    autoFocus
+                   
                   />
                   <button
                     className="bg-blue-800 px-3 py-2 cursor-pointer   rounded"
@@ -457,7 +457,7 @@ export default function Messages() {
                     className="flex-grow border-b border-neutral-800 focus:outline-none "
                     value={targetSearch}
                     onChange={handleSearch}
-                    autoFocus
+                   
                   />
                 </div>
                 <div className="overflow-y-auto w-full ">
@@ -544,7 +544,7 @@ export default function Messages() {
     );
   } else {
     return (
-      <div className="w-full h-screen bg-neutral-100 pb-35">
+      <div className="w-full h-full max-h-screen bg-neutral-100 pb-35">
         <div
           className={`fixed bottom-15 -right-5 flex justify-end items-center px-10 py-6 ${
             isAtBottom ? "hidden" : "block"
@@ -675,7 +675,7 @@ export default function Messages() {
                 aria-label="Type a message"
                 value={newMsg}
                 onChange={typingHandler}
-                autoFocus
+               
               />
               <Button
                 className="bg-orange-600 h-13"

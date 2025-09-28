@@ -22,7 +22,7 @@ export default function MessagesPage() {
   }, []);
 
   return (
-    <div className="block">
+    <div >
       <Loading />
       <Messages />
     </div>

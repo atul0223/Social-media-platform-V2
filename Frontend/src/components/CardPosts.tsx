@@ -340,7 +340,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
                   onChange={(e) => {
                     setNewComment(e.target.value);
                   }}
-                  autoFocus
+                
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       handleAddComment(activePost.postDetails._id);

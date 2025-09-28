@@ -289,7 +289,7 @@ function Settings() {
                         placeholder="New username"
                         aria-label="new username"
                         aria-describedby="button-addon2"
-                        autoFocus
+                       
                         onChange={(e) => {
                           setNewUsername(e.target.value);
                           handleCheckUserAvailability(e.target.value);
@@ -334,7 +334,7 @@ function Settings() {
                         placeholder="New Fullname"
                         aria-label="New Full Name"
                         aria-describedby="button-addon3"
-                        autoFocus
+                       
                         value={newFullName}
                         onChange={(e) => setNewFullName(e.target.value)}
                       />
@@ -376,7 +376,7 @@ function Settings() {
                         placeholder="New email"
                         aria-label="New Email"
                         aria-describedby="button-addon4"
-                        autoFocus
+                       
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
                       />

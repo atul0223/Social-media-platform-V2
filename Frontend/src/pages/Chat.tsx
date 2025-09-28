@@ -124,7 +124,7 @@ export default function Chat() {
             aria-label="Search"
             value={targetSearch}
             onChange={handleSearch}
-            autoFocus
+           
           />
 
           {isSearching ? (

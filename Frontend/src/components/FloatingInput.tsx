@@ -25,7 +25,7 @@ const FloatingInput = ({
     <div className="relative w-full mb-3">
       <input
         type={type}
-        autoFocus
+        
         value={value}
         readOnly={readOnly}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>

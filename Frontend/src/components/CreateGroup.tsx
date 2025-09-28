@@ -23,8 +23,8 @@
       setTargetSearch(e.target.value);
 
       const res = await axios
-        .get(`${BACKENDURL}/home/search`, {
-          params: { query: e.target.value },
+        .get(`${BACKENDURL}/home/search?query=${targetSearch}&searchType=users`, {
+          
           withCredentials: true,
         })
 
@@ -96,7 +96,7 @@
                   className="flex-grow border-b border-neutral-800 focus:outline-none "
                   value={targetSearch}
                   onChange={handleSearch}
-                  autoFocus
+                 
                 />
               </div>
               <div className="overflow-y-auto w-full h-9/11  p-4">
@@ -170,7 +170,7 @@
                   className="flex-grow border-b border-neutral-800 focus:outline-none "
                   value={GroupName}
                   onChange={(e)=>setGroupName(e.target.value)}
-                  autoFocus
+                 
                 />
               </div>
               

@@ -18,7 +18,7 @@ router.route("/search").get(verifyUser, async (req, res) => {
       .status(400)
       .json({
         message:
-          "searchType parameter is required and should be either 'user' or 'post'",
+          "searchType parameter is required and should be either 'users' or 'posts'",
       });
   }
   if (searchType === "users") {
