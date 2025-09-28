@@ -52,7 +52,7 @@ const userSchema = new Schema(
         type: Boolean,
         default: false,
       },
-      reason: { type: String, required: true },
+      reason: { type: String, },
       reactivationTime: {
         type: Date,
       },
