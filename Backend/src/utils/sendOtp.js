@@ -7,7 +7,7 @@ const sendOtp = async (email) => {
 
   try {
     await resend.emails.send({
-      from: "onboarding@resend.dev", // You can change this to your verified sender
+      from: "onboarding@resend.dev",
       to: email,
       subject: "Verification Code",
       html: `<p>Your OTP is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,

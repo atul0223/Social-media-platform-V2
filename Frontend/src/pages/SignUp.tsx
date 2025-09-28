@@ -35,7 +35,7 @@ function Signup() {
     setLoading(true);
     const formData = new FormData();
     formData.append("username", username);
-    formData.append("email", email); // stringify array
+    formData.append("email", email); 
     formData.append("password", password);
     formData.append("profilePic", selectedPic);
     const res = await axios
@@ -43,7 +43,7 @@ function Signup() {
       .then(() => {
         setLoading(false);
         setOtpPageOpen(true)
-        // navigate("/verifyEmail");
+        
       })
       .catch((_error) => {
         setLoading(false);

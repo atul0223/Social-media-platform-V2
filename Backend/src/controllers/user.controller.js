@@ -43,7 +43,7 @@ const signup = async (req, res) => {
  
   });
 
-  sendOtp(email)
+ await sendOtp(email)
 
   return res.status(200).json({
     message: "Successfully registered" ,requiresOtp: true ,emailVerify:true
@@ -101,11 +101,8 @@ const user = await User.findOne({
   });
 };
 const logout = async (req, res) => {
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-  res.clearCookie("AccessToken", options);
+ 
+  await res.clearCookie("AccessToken");
   return res.status(200).json({
     message: "Logout successful",
   });
