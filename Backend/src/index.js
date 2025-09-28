@@ -9,12 +9,7 @@ dotenv.config({
 });
 const port = process.env.PORT || 5000;
 connection().then(() => {
-  // const options = {
-  //   key: fs.readFileSync("localhost-key.pem"),
-  //   cert: fs.readFileSync("localhost.pem"),
-  // };
-
-  const server = https.createServer( app);
+  const server = https.createServer(app);
 
   const io = new Server(server, {
     cors: {
@@ -38,20 +33,16 @@ connection().then(() => {
       });
     });
 
-   socket.on("typing", ({ chatId, user }) => {
-  socket.to(chatId).emit("typing", { user ,chatId});
-});
-socket.on("stop typing", (chatId) => {
-  socket.to(chatId).emit("stop typing", { chatId });
-});
-
-
-    socket.on("disconnect", () => {
-    
+    socket.on("typing", ({ chatId, user }) => {
+      socket.to(chatId).emit("typing", { user, chatId });
     });
-  });
-server.listen(port, "0.0.0.0", () => {
-  console.log(`HTTPS server is listening on port ${port}`);
-});
+    socket.on("stop typing", (chatId) => {
+      socket.to(chatId).emit("stop typing", { chatId });
+    });
 
+    socket.on("disconnect", () => {});
+  });
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`HTTPS server is listening on port ${port}`);
+  });
 });
