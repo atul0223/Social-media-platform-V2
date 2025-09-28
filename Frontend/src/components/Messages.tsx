@@ -544,7 +544,7 @@ export default function Messages() {
     );
   } else {
     return (
-      <div className="w-full h-full max-h-screen bg-neutral-100 pb-35">
+      <div className="w-full h-screen bg-neutral-100 pb-40">
         <div
           className={`fixed bottom-15 -right-5 flex justify-end items-center px-10 py-6 ${
             isAtBottom ? "hidden" : "block"
