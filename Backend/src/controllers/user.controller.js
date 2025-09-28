@@ -338,7 +338,7 @@ const verifyOtp = async (req, res) => {
   if (otp.length !== 6) {
     return res.status(400).json({ message: "otp must be 6 digits" });
   }
-  if (user.otp.toString() !== otp.toString()) {
+  if (user.otp?.toString() !== otp?.toString()) {
     return res.status(400).json({ message: "invalid otp" });
   }
 
