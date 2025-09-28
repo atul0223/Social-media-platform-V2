@@ -3,7 +3,8 @@ import User from "../models/user.model.js";
 
 const sendOtp = async (email) => {
   const otp = Math.floor(100000 + Math.random() * 900000);
-
+  console.log(process.env.BREVO_API_KEY);
+  
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
       <h2>🔐 Email Verification</h2>
