@@ -546,7 +546,7 @@ export default function Messages() {
     return (
       <div className="w-full h-screen bg-neutral-100 pb-35">
         <div
-          className={`fixed bottom-15 -right-5 flex justify-end items-center px-10 py-6 ${
+          className={`fixed bottom-15 -right-5 flex justify-end items-center px-10 py-6  ${
             isAtBottom ? "hidden" : "block"
           }`}
         >
@@ -558,7 +558,7 @@ export default function Messages() {
           </div>
         </div>
         <div
-          className="fixed w-full h-17 bg-neutral-200 flex items-center cursor-pointer "
+          className=" w-full h-17 bg-neutral-200 flex items-center cursor-pointer "
           onClick={() => {
             selectedChat.chatName === "sender"
               ? navigate(`/profile?user=${selectedChatMetaData?.username}`)
@@ -591,7 +591,7 @@ export default function Messages() {
           </h6>
         </div>
         <div
-          className=" w-full h-full overflow-y-scroll"
+          className=" w-full h-full overflow-y-scroll "
           id="message-scroll-container"
         >
           <div className="w-full flex justify-center ">
@@ -616,18 +616,21 @@ export default function Messages() {
                     {item.content}
                   </div>
 
-                  <div className="w-11 h-11"></div>
+                  <div className="w-2 h-2"></div>
                 </div>
               ) : (
                 <div className="flex gap-2 ml-2" key={item._id}>
-                  {shouldShowPic(index) ? (
+                  {selectedChat.chatName!=="sender" && shouldShowPic(index) ? (
                     <img
-                      src={item.sender.profilePic || "pic.jpg"}
+                      src={item.sender.profilePic || "/pic.jpg"}
                       alt=""
-                      className="w-10 h-10 rounded-full mr-1"
+                      className="w-10 h-10 rounded-full mr-1 cursor-pointer"
+                      onClick={() =>
+                        navigate(`/profile?user=${item.sender.username}`)
+                      }
                     />
                   ) : (
-                    <div className="w-11 h-11"></div>
+                    <div className="w-2 h-2"></div>
                   )}{" "}
                   <div
                     className={`max-w-2/3 w-fit h-fit p-2 bg-white break-words rounded-tr-xl rounded-br-xl rounded-bl-xl mb-1 ${
