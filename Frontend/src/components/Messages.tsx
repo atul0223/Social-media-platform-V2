@@ -124,7 +124,7 @@ export default function Messages() {
   const selectedChatMetaData = userReturn(selectedChat?.users);
   const profilePic =
     selectedChat?.chatName === "sender"
-      ? userReturn(selectedChat.users)?.profilePic
+      ? userReturn(selectedChat.users)?.profilePic || "/pic.jpg"
       : selectedChat?.pic || "/group-chat.png";
   const shouldShowPic = (index: any) => {
     // If it's the last message, always show the profile pic
@@ -558,7 +558,7 @@ export default function Messages() {
           </div>
         </div>
         <div
-          className="sticky w-full h-17 bg-neutral-200 flex items-center cursor-pointer "
+          className="fixed w-full h-17 bg-neutral-200 flex items-center cursor-pointer "
           onClick={() => {
             selectedChat.chatName === "sender"
               ? navigate(`/profile?user=${selectedChatMetaData?.username}`)
