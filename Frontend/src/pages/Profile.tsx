@@ -77,7 +77,11 @@ export default function Profile() {
       setIsLoading(false);
     }
   };
-  const currentUserDetails =JSON.parse(localStorage.getItem("currentUser"));
+  const rawUser = localStorage.getItem("currentUser");
+      if (rawUser) {
+       var currentUserDetails = JSON.parse(rawUser);
+      }
+ 
   useEffect(() => {
     const currentUserDetails =localStorage.getItem("currentUser") 
     if (currentUserDetails=== null) {
