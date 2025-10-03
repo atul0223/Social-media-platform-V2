@@ -11,7 +11,7 @@ export default function SingleChat(props: any) {
     accessMessage,
     setSelectedChat,
     isSmallScreen,
-    setIsNewChat,
+    
   }: any = useContext(UserContext);
   const selectedChat = JSON.parse(
     localStorage.getItem("selectedChat") || "null"
@@ -38,7 +38,7 @@ export default function SingleChat(props: any) {
   };
   const [senderName, setSenderName] = useState();
   useEffect(() => {
-    setIsNewChat(false);
+  
     setLatestMesssage(chat?.latestMessage.content);
     setSenderName(chat?.latestMessage?.sender?.username);
   }, [chat]);
