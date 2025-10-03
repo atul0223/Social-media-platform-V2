@@ -35,6 +35,7 @@ export default function OtpComponent({
       .then(() => {
         setLoading(false);
         fetchCurrentUser()
+        navigate("/homepage");
       })
       .catch((_error) => {
         setLoading(false);
