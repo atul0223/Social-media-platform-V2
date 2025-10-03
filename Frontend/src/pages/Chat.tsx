@@ -184,7 +184,7 @@ export default function Chat() {
             </div>
           ) : (
             <div className="mt-4">
-              {Object.keys(chats).length > 0 ? (
+              {chats? (
                 Object.entries(chats).map(([id, chat]) => (
                   <SingleChat chat={chat} key={id} />
                 ))
