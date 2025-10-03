@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 
 const sendOtp = async (email) => {
   const otp = Math.floor(100000 + Math.random() * 900000);
-  console.log(process.env.BREVO_API_KEY);
+
   
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
@@ -17,7 +17,7 @@ const sendOtp = async (email) => {
   `;
 
   try {
-    console.log("Sending OTP to:", email);
+    
     
     await axios.post(
       "https://api.brevo.com/v3/smtp/email",
@@ -34,7 +34,7 @@ const sendOtp = async (email) => {
         },
       }
     );
-    console.log("OTP sent successfully to:", email);
+
     await User.findOneAndUpdate(
       { email },
       {

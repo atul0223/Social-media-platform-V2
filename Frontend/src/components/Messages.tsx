@@ -146,6 +146,7 @@ export default function Messages() {
       { chatId: selectedChat._id, content: newMsg },
       { withCredentials: true }
     );
+    socket.emit("newChat", selectedChat);
     socket.emit("sendMessage", {
       chat: selectedChat,
       content: newMsg,
@@ -606,7 +607,7 @@ export default function Messages() {
           </div>
           <div>
             {messages.map((item: any, index: any) => {
-              return item.sender._id === currentUserDetails._id ? (
+              return item?.sender?._id === currentUserDetails._id ? (
                 <div className="flex mr-2 justify-end" key={item?._id}>
                   <div
                     className={`max-w-2/3 w-fit h-fit p-2 bg-orange-600 break-words rounded-tl-xl rounded-br-xl ${

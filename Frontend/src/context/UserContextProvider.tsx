@@ -50,6 +50,7 @@ export default function UserContextProvider({ children }: any) {
     return res.data;
   };
   const fetchCurrentUser = async () => {
+    
     try {
       const response = await axios.get(`${BACKENDURL}/user/getUser`, {
         withCredentials: true,

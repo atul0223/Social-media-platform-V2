@@ -14,9 +14,11 @@ export default function Profile() {
     fetchUser,
     setTabOpen,
     setLoading,
-  
+   
   }: any = useContext(UserContext);
-
+  
+  
+  
   const [searchParams] = useSearchParams();
   const user = searchParams.get("user");
   const navigate = useNavigate();
@@ -75,9 +77,10 @@ export default function Profile() {
       setIsLoading(false);
     }
   };
-
+  const currentUserDetails =JSON.parse(localStorage.getItem("currentUser"));
   useEffect(() => {
-    if (localStorage.getItem("currentUser") === null) {
+    const currentUserDetails =localStorage.getItem("currentUser") 
+    if (currentUserDetails=== null) {
       navigate("/");
     }
 
@@ -91,7 +94,7 @@ export default function Profile() {
       <div className="w-full h-full sm:px-20 md:px-30 xl:px-40 px-4 select-none">
         <div>
           <Loading />
-        <Link
+        {currentUserDetails.username===user?<Link
             to="/settings"
             className=" z-50  rounded-full mt-4 -mr-3 flex items-center justify-end transition sm:hidden "
           >
@@ -110,7 +113,7 @@ export default function Profile() {
                 <p>Settings</p>
               </TooltipContent>
             </Tooltip>
-          </Link>
+          </Link>:<></>}
           <div className="h-100 w-full flex flex-wrap justify-center sm:mt-10 ">
             <div className="rounded-full w-45 h-45 overflow-hidden mt-7">
               <img
