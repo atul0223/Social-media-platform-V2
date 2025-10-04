@@ -21,6 +21,8 @@ const signup = async (req, res) => {
   if ([username, password, email].some((f) => !f?.trim())) {
     return res.status(401).json({ message: "fields required" });
   }
+  console.log(username, password, email);
+  
   const localFilePath = req.files?.profilePic?.[0]?.path;
   const existedUser = await User.findOne({ username });
   if (existedUser) {
