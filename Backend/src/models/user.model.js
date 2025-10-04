@@ -77,6 +77,8 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.validatePassword = async function (password) {
+  console.log(password);
+
   const hashed = this.passwordSchema?.password;
 
   if (!password || !hashed) {
