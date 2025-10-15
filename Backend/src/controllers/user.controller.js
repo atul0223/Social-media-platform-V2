@@ -355,7 +355,7 @@ const verifyOtp = async (req, res) => {
 
   user.otp = null;
   user.passwordSchema.attempts = 0; // Reset attempts on successful login
-  if(emailVerify) user.isVerified=true
+  user.isVerified=true
   await user.save({ validateBeforeSave: false });
   return res.status(200).cookie("AccessToken", accessToken, options).json({
     message: "Successfully logged in",
