@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from "react";
 import { X, Save, ImageIcon } from "lucide-react";
+import { GoogleGenAI } from "@google/genai";
 import UserContext from "@/context/UserContext";
 import axios from "axios";
 import { BACKENDURL } from "@/config";
@@ -116,6 +117,23 @@ useEffect(()=>{
       navigate("/")
     }
 })
+const [generating, setGenerating] = useState(false);
+
+// The client gets the API key from the environment variable `GEMINI_API_KEY`.
+const ai = new GoogleGenAI({});
+
+async function generateDescription() {
+  setGenerating(true);
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `hey here is my post title: ${postData.title}. can you generate a short and catchy description for my post?`,
+  });
+  setGenerating(false);
+  setPostData((prev) => ({ ...prev, description: response.text || '' }));
+  console.log(response.text);
+}
+
+
   return (
     <div className="min-h-screen bg-gray-50 pb-30 sm:pb-0">
       {/* Header */}
@@ -223,6 +241,16 @@ useEffect(()=>{
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
+                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Generate with AI
+                    <button
+                      onClick={generateDescription}
+                      disabled={generating}
+                      className="ml-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      {generating ? "Generating..." : "Generate"}
+                    </button>
                   </label>
                   <textarea
                     value={postData.description}
