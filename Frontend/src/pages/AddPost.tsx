@@ -6,7 +6,6 @@ import React, {
   useContext,
 } from "react";
 import { X, Save, ImageIcon } from "lucide-react";
-import { GoogleGenAI } from "@google/genai";
 import UserContext from "@/context/UserContext";
 import axios from "axios";
 import { BACKENDURL } from "@/config";
@@ -119,18 +118,28 @@ useEffect(()=>{
 })
 const [generating, setGenerating] = useState(false);
 
-// The client gets the API key from the environment variable `GEMINI_API_KEY`.
-const ai = new GoogleGenAI({});
-
 async function generateDescription() {
+  if (!postData.title.trim()) {
+    alert("Add a title first so AI can generate a description.");
+    return;
+  }
   setGenerating(true);
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: `hey here is my post title: ${postData.title}. can you generate a short and catchy description for my post?`,
-  });
-  setGenerating(false);
-  setPostData((prev) => ({ ...prev, description: response.text || '' }));
-  console.log(response.text);
+  try {
+    const response = await axios.post(
+      `${BACKENDURL}/ai/generate-description`,
+      { title: postData.title },
+      { withCredentials: true }
+    );
+    setPostData((prev) => ({
+      ...prev,
+      description: response.data?.description || "",
+    }));
+  } catch (error) {
+    console.error("AI description generation failed:", error);
+    alert("AI generation failed. Check your API key and network, then try again.");
+  } finally {
+    setGenerating(false);
+  }
 }
 
 
