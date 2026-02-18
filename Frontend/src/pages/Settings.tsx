@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState } from "react";
 import UserContext from "../context/UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config.js";
@@ -147,10 +147,6 @@ function Settings() {
 
     setLoading(false);
   };
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const handlePickPhoto = () => {
-    fileInputRef.current?.click();
-  };
   const handleDeleteProfilePic = async () => {
     setLoading(true);
     try {
@@ -224,19 +220,24 @@ function Settings() {
                           handleDeleteProfilePic();
                         }}
                       />
-                      <div onClick={handlePickPhoto}>
+                      <div>
                         <input
+                          id="settings-profile-pic"
                           type="file"
                           accept="image/*"
-                          ref={fileInputRef}
                           onChange={handleFileChange}
-                          style={{ display: "none" }}
+                          className="sr-only"
                         />
-                        <img
-                          src="edit.png"
-                          alt=""
-                          className="absolute w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 ml-10 mt-9"
-                        />
+                        <label
+                          htmlFor="settings-profile-pic"
+                          className="cursor-pointer"
+                        >
+                          <img
+                            src="edit.png"
+                            alt=""
+                            className="absolute w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 ml-10 mt-9"
+                          />
+                        </label>
                       </div>
                     </div>
                   ) : (

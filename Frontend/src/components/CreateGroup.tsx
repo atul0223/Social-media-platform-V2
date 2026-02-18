@@ -1,4 +1,4 @@
-  import  { useContext, useEffect, useRef, useState } from "react";
+  import  { useContext, useEffect, useState } from "react";
   import UserContext from "../context/UserContext";
   import axios from "axios";
   import { BACKENDURL } from "../config";
@@ -8,7 +8,6 @@
   export default function CreateGroup() {
     const [pageOneOpen, setPageOneOpen] = useState(true);
     const [previewPic, setPreviewPic] = useState<string | null>(null);
-      const fileInputRef = useRef<HTMLInputElement>(null);
     
     const[GroupName,setGroupName]=useState("")
     const [selectedPeoples,setSelectedPeoples] =useState<string[]>([])
@@ -16,9 +15,6 @@
     const [targetSearch, setTargetSearch] = useState("");
     const [searchData, setSearchData] = useState([]);
     const [selectedPic, setSelectedPic] = useState(null);
-      const handlePickPhoto = () => {
-      fileInputRef.current?.click();
-    };
     const handleSearch = async (e:any) => {
       setTargetSearch(e.target.value);
 
@@ -147,19 +143,21 @@
       alt="Group Preview"
       className="object-cover w-45 h-45 rounded-full bg-neutral-400"
     />
-    <div className="mt-35 " onClick={handlePickPhoto}>
+    <div className="mt-35 ">
       <input
+        id="create-group-pic"
         type="file"
         accept="image/*"
-        ref={fileInputRef}
         onChange={handleFileChange}
-        style={{ display: "none" }}
+        className="sr-only"
       />
-      <img
-        src="edit.png"
-        alt="Edit"
-        className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10"
-      />
+      <label htmlFor="create-group-pic" className="cursor-pointer">
+        <img
+          src="edit.png"
+          alt="Edit"
+          className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10"
+        />
+      </label>
     </div>
   </div>
 

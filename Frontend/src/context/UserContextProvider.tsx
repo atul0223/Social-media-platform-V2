@@ -73,11 +73,14 @@ export default function UserContextProvider({ children }: any) {
         setCurrentUserDetails(JSON.parse(rawUser));
       }
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching user data:", error);
-      applyAuthToken(null);
-      localStorage.removeItem("currentUser");
-      setCurrentUserDetails(undefined);
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        applyAuthToken(null);
+        localStorage.removeItem("currentUser");
+        setCurrentUserDetails(undefined);
+      }
       return null;
     }
   };

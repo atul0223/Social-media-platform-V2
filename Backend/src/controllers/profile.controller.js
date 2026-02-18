@@ -377,120 +377,61 @@ const toggleFollow = async (req, res) => {
   }
 };
 const getFollowerFollowingList = async (req, res) => {
-  const { username } = req.params;
-  const userX = req.user;
-  const targetUser = await User.findOne({ username }).select(
-    "-password -refreshToken -verificationEmailToken -isVerified -trustedDevices "
-  );
-  if (targetUser?.blockedUsers?.includes(userX._id)) {
-    return res.status(404).json({message:"user not found"})
-  }
-  if (isFollowed(targetUser._id, userX._id) || (!targetUser.profilePrivate)) {
-    const FolloweList = await User.aggregate([
-      {
-        $match: {
-          username: username,
-        },
-      },
-      {
-        $lookup: {
-          from: "userprofiles",
-          localField: "_id",
-          foreignField: "profile",
-          as: "followerList",
-        },
-      },
-      {
-        $unwind: { path: "$followerList", preserveNullAndEmptyArrays: true },
-      },
-      {
-        $lookup: {
-          from: "users",
-          let: { followerId: "$followerList.follower" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$followerId"] } } },
-            {
-              $project: {
-                username: 1,
-                profilePic: 1,
-                _id: 1,
-              },
-            },
-          ],
-          as: "followerUser",
-        },
-      },
-      {
-        $unwind: {
-          path: "$followerUser",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
+  try {
+    const { username } = req.params;
+    const userX = req.user;
 
-          followerList: { $push: "$followerUser" },
-        },
-      },
-      {
-        $lookup: {
-          from: "userprofiles",
-          localField: "_id",
-          foreignField: "follower",
-          as: "followingList",
-        },
-      },
-      {
-        $unwind: {
-          path: "$followingList",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+    const targetUser = await User.findOne({ username }).select(
+      "_id username profilePrivate blockedUsers"
+    );
 
-      {
-        $lookup: {
-          from: "users",
-          let: { followingId: "$followingList.profile" },
-          pipeline: [
-            { $match: { $expr: { $eq: ["$_id", "$$followingId"] } } },
-            {
-              $project: {
-                username: 1,
-                profilePic: 1,
-                _id: 1,
-              },
-            },
-          ],
-          as: "followingUser",
-        },
-      },
-      {
-        $unwind: {
-          path: "$followingUser",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          followerList: { $first: "$followerList" },
-          followingList: { $push: "$followingUser" },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          followerList: 1,
-          followingList: 1,
-        },
-      },
-    ]);
-    if (!FolloweList.length) {
-     return res.status(404).json({message:"user not found"})
+    if (!targetUser) {
+      return res.status(404).json({ message: "user not found" });
     }
 
-    return res.status(200).json(FolloweList[0]);
+    if (targetUser.blockedUsers?.includes(userX._id)) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    const sameUser = targetUser._id.toString() === userX._id.toString();
+    const followed = await isFollowed(targetUser._id, userX._id);
+    const canAccess = sameUser || !targetUser.profilePrivate || followed;
+
+    if (!canAccess) {
+      return res
+        .status(403)
+        .json({ message: "this account is private", followerList: [], followingList: [] });
+    }
+
+    const followersRaw = await UserProfile.find({
+      profile: targetUser._id,
+      requestStatus: "accepted",
+    })
+      .populate("follower", "_id username profilePic")
+      .lean();
+
+    const followingRaw = await UserProfile.find({
+      follower: targetUser._id,
+      requestStatus: "accepted",
+    })
+      .populate("profile", "_id username profilePic")
+      .lean();
+
+    const followerList = followersRaw
+      .map((item) => item.follower)
+      .filter(Boolean);
+
+    const followingList = followingRaw
+      .map((item) => item.profile)
+      .filter(Boolean);
+
+    return res.status(200).json({ followerList, followingList });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Internal Server Error",
+      followerList: [],
+      followingList: [],
+    });
   }
 };
 export { getUserProfile, toggleBlock, toggleFollow, getFollowerFollowingList };

@@ -71,7 +71,7 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
   const removeImage = () => {
-    setPostData((prev) => ({ ...prev, image: null }));
+    setPostData((prev) => ({ ...prev, imagePreview: null, imageFile: null }));
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

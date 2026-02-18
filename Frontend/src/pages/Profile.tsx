@@ -9,6 +9,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Profile() {
+  type FollowUser = {
+    _id: string;
+    username: string;
+    profilePic?: string;
+  };
   const {
     targetuser,
     fetchUser,
@@ -23,6 +28,14 @@ export default function Profile() {
   const user = searchParams.get("user");
   const navigate = useNavigate();
   const [choice, setChoice] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"followers" | "following">(
+    "followers"
+  );
+  const [followListLoading, setFollowListLoading] = useState(false);
+  const [followListError, setFollowListError] = useState("");
+  const [followerList, setFollowerList] = useState<FollowUser[]>([]);
+  const [followingList, setFollowingList] = useState<FollowUser[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [canSee, setCansee] = useState(true);
@@ -77,10 +90,32 @@ export default function Profile() {
       setIsLoading(false);
     }
   };
+  const openFollowList = async (tab: "followers" | "following") => {
+    if (!targetuser?.username) {
+      return;
+    }
+    setActiveTab(tab);
+    setListOpen(true);
+    setFollowListLoading(true);
+    setFollowListError("");
+    try {
+      const res = await axios.get(`${BACKENDURL}/profile/${targetuser.username}/list`, {
+        withCredentials: true,
+      });
+      setFollowerList(res.data?.followerList || []);
+      setFollowingList(res.data?.followingList || []);
+    } catch (error: any) {
+      setFollowerList([]);
+      setFollowingList([]);
+      setFollowListError(
+        error?.response?.data?.message || "Failed to load follower list."
+      );
+    } finally {
+      setFollowListLoading(false);
+    }
+  };
   const rawUser = localStorage.getItem("currentUser");
-      if (rawUser) {
-       var currentUserDetails = JSON.parse(rawUser);
-      }
+  const currentUserDetails = rawUser ? JSON.parse(rawUser) : null;
  
   useEffect(() => {
     const currentUserDetails =localStorage.getItem("currentUser") 
@@ -98,7 +133,7 @@ export default function Profile() {
       <div className="w-full h-full sm:px-20 md:px-30 xl:px-40 px-4 select-none">
         <div>
           <Loading />
-        {currentUserDetails.username===user?<Link
+        {currentUserDetails?.username===user?<Link
             to="/settings"
             className=" z-50  rounded-full mt-4 -mr-3 flex items-center justify-end transition sm:hidden "
           >
@@ -130,8 +165,20 @@ export default function Profile() {
             </div>
             <div className="w-full flex justify-center gap-12">
               <div>{targetuser.postCount} posts</div>
-              <div className="cursor-pointer hover:underline">{targetuser.followerCount} followers</div>
-              <div className="cursor-pointer hover:underline">{targetuser.followingCount} following</div>
+              <button
+                type="button"
+                className="cursor-pointer hover:underline"
+                onClick={() => openFollowList("followers")}
+              >
+                {targetuser.followerCount} followers
+              </button>
+              <button
+                type="button"
+                className="cursor-pointer hover:underline"
+                onClick={() => openFollowList("following")}
+              >
+                {targetuser.followingCount} following
+              </button>
             </div>
 
             {targetuser.sameUser === true ? (
@@ -218,6 +265,81 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      {listOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-0 sm:p-4"
+          onClick={() => setListOpen(false)}
+        >
+          <div
+            className="h-full w-full rounded-none bg-white p-4 sm:h-auto sm:max-h-[85vh] sm:max-w-md sm:rounded-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between border-b pb-2">
+              <h3 className="text-lg font-semibold">Connections</h3>
+              <button
+                type="button"
+                className="rounded bg-neutral-200 px-2 py-1 text-sm"
+                onClick={() => setListOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div className="mb-3 flex gap-2">
+              <button
+                type="button"
+                className={`rounded px-3 py-1 ${
+                  activeTab === "followers"
+                    ? "bg-orange-600 text-white"
+                    : "bg-neutral-200 text-black"
+                }`}
+                onClick={() => setActiveTab("followers")}
+              >
+                Followers ({followerList.length})
+              </button>
+              <button
+                type="button"
+                className={`rounded px-3 py-1 ${
+                  activeTab === "following"
+                    ? "bg-orange-600 text-white"
+                    : "bg-neutral-200 text-black"
+                }`}
+                onClick={() => setActiveTab("following")}
+              >
+                Following ({followingList.length})
+              </button>
+            </div>
+            <div className="h-[calc(100vh-170px)] overflow-y-auto sm:h-auto sm:max-h-80">
+              {followListLoading ? (
+                <p className="py-6 text-center text-sm text-neutral-500">Loading...</p>
+              ) : followListError ? (
+                <p className="py-6 text-center text-sm text-red-600">{followListError}</p>
+              ) : (activeTab === "followers" ? followerList : followingList)
+                  .length === 0 ? (
+                <p className="py-6 text-center text-sm text-neutral-500">No users found.</p>
+              ) : (
+                (activeTab === "followers" ? followerList : followingList).map((item) => (
+                  <button
+                    key={item._id}
+                    type="button"
+                    className="mb-2 flex w-full items-center rounded-lg p-2 text-left hover:bg-neutral-100"
+                    onClick={() => {
+                      setListOpen(false);
+                      navigate(`/profile?user=${item.username}`);
+                    }}
+                  >
+                    <img
+                      src={item.profilePic || "/pic.jpg"}
+                      alt={item.username}
+                      className="mr-3 h-10 w-10 rounded-full bg-neutral-300 object-cover"
+                    />
+                    <span>@{item.username}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

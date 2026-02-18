@@ -3,7 +3,7 @@ import { BackgroundBeamsWithCollision } from "@/components/ui/background-beams-w
 import UserContext from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { BACKENDURL } from "@/config";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import axios from "axios";
@@ -16,14 +16,10 @@ function Signup() {
   const [password, setPassword] = useState("");
   const [confirmpass, setConfirmPass] = useState("");
   const [error, setError] = useState("");
-  const { loading, setLoading }: any = useContext(UserContext);
+  const { loading, setLoading, fetchCurrentUser }: any = useContext(UserContext);
   const [previewPic, setPreviewPic] = useState("");
   const [selectedPic, setSelectedPic] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const[otpPageOpen,setOtpPageOpen] =useState(false)
-  const handlePickPhoto = () => {
-    fileInputRef.current?.click();
-  };
   const handleChange =
     (setter: React.Dispatch<React.SetStateAction<string>>) =>
     (value: string) => {
@@ -53,15 +49,11 @@ function Signup() {
   };
   const getUser = async () => {
     setLoading(true);
-    await axios
-      .get(`${BACKENDURL}/user/getUser`, { withCredentials: true })
-      .then(() => {
-        navigate("/homepage");
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    const user = await fetchCurrentUser();
+    if (user) {
+      navigate("/homepage");
+    }
+    setLoading(false);
   };
   useEffect(() => {
    
@@ -92,19 +84,21 @@ function Signup() {
               alt="Group Preview"
               className="object-cover w-30 h-30 rounded-full bg-gray-700 mb-3"
             />
-            <div className="mt-23 " onClick={handlePickPhoto}>
+            <div className="mt-23 ">
               <input
+                id="signup-profile-pic"
                 type="file"
                 accept="image/*"
-                ref={fileInputRef}
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                className="sr-only"
               />
-              <img
-                src="edit.png"
-                alt="Edit"
-                className="absolute w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
-              />
+              <label htmlFor="signup-profile-pic" className="cursor-pointer">
+                <img
+                  src="edit.png"
+                  alt="Edit"
+                  className="absolute w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
+                />
+              </label>
             </div>
           </div>
           <FloatingInput

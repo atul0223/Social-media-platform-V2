@@ -13,14 +13,10 @@ import { Button } from "./ui/button";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Messages() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
-  const handlePickPhoto = () => {
-    fileInputRef.current?.click();
-  };
   const navigate = useNavigate();
   const [isAtBottom, setIsAtBottom] = useState(true);
 
@@ -351,19 +347,21 @@ export default function Messages() {
             />
 
             {selectedChat?.groupAdmin._id === currentUserDetails?._id ? (
-              <div className="mt-37 " onClick={handlePickPhoto}>
+              <div className="mt-37 ">
                 <input
+                  id="group-settings-pic"
                   type="file"
                   accept="image/*"
-                  ref={fileInputRef}
                   onChange={handleChangeGroupPic}
-                  style={{ display: "none" }}
+                  className="sr-only"
                 />
-                <img
-                  src="/edit.png"
-                  alt="Edit"
-                  className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 "
-                />
+                <label htmlFor="group-settings-pic" className="cursor-pointer">
+                  <img
+                    src="/edit.png"
+                    alt="Edit"
+                    className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 "
+                  />
+                </label>
               </div>
             ) : (
               <></>

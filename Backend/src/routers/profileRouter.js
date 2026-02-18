@@ -20,6 +20,7 @@ import Like from "../models/likes.model.js";
 router.get("/:username", verifyUser, getUserProfile);
 router.route("/:username/toggleFollow").post(verifyUser, toggleFollow);
 router.route("/:username/List").get(verifyUser, getFollowerFollowingList);
+router.route("/:username/list").get(verifyUser, getFollowerFollowingList);
 router.route("/post").post(
   verifyUser,
   upload.fields([

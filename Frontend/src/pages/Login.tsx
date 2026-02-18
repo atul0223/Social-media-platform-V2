@@ -22,15 +22,11 @@ function Login() {
   const [OtpNeeded, setOtpNeeded] = useState(false);
   const getUser = async () => {
     setLoading(true);
-    await axios
-      .get(`${BACKENDURL}/user/getUser`, { withCredentials: true })
-      .then(() => {
-        navigate("/homepage");
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    const user = await fetchCurrentUser();
+    if (user) {
+      navigate("/homepage");
+    }
+    setLoading(false);
   };
   useEffect(() => {
     getUser();
