@@ -3,6 +3,19 @@ import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
 import type { CurrentUserDetails } from "@/Types/Types";
+
+const AUTH_TOKEN_KEY = "accessToken";
+
+const applyAuthToken = (token: string | null) => {
+  if (token) {
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    return;
+  }
+  delete (axios.defaults.headers.common as any).Authorization;
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+};
+
 export default function UserContextProvider({ children }: any) {
   const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -62,6 +75,7 @@ export default function UserContextProvider({ children }: any) {
       return response.data;
     } catch (error) {
       console.error("Error fetching user data:", error);
+      applyAuthToken(null);
       localStorage.removeItem("currentUser");
       setCurrentUserDetails(undefined);
       return null;
@@ -69,6 +83,8 @@ export default function UserContextProvider({ children }: any) {
   };
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const savedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    applyAuthToken(savedToken);
     setIsSmallScreen(mediaQuery.matches);
     fetchCurrentUser();
     const handler = (e: any) => setIsSmallScreen(e.matches);

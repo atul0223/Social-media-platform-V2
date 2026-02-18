@@ -31,6 +31,8 @@ function Settings() {
         { withCredentials: true }
       );
       localStorage.removeItem("currentUser");
+      localStorage.removeItem("accessToken");
+      delete (axios.defaults.headers.common as any).Authorization;
       navigate("/");
     } catch (error: any) {
       setMessage(error.response?.data?.message || "Error changing username");

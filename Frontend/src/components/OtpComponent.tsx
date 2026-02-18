@@ -32,7 +32,12 @@ export default function OtpComponent({
         { identifier, otp, trustDevice ,emailVerify },
         { withCredentials: true }
       )
-      .then(async () => {
+      .then(async (response) => {
+        const token = response.data?.accessToken;
+        if (token) {
+          localStorage.setItem("accessToken", token);
+          axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+        }
         setLoading(false);
         const user = await fetchCurrentUser();
         if (user) {

@@ -100,6 +100,7 @@ const user = await User.findOne({
 
   return res.status(200).cookie("AccessToken", accessToken, options).json({
     message: "Successfully logged in",
+    accessToken,
   });
 };
 const logout = async (req, res) => {
@@ -359,6 +360,7 @@ const verifyOtp = async (req, res) => {
   await user.save({ validateBeforeSave: false });
   return res.status(200).cookie("AccessToken", accessToken, options).json({
     message: "Successfully logged in",
+    accessToken,
   });
 };
 

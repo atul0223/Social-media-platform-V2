@@ -2,7 +2,13 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 const verifyUser = async (req, res, next) => {
   try {
-    const token = req.cookies?.AccessToken;
+    const cookieToken = req.cookies?.AccessToken;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+    const bearerToken =
+      typeof authHeader === "string" && authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+    const token = cookieToken || bearerToken;
     if (!token) {
       return next(new Error("Unauthorized request — please login first"));
     }
