@@ -7,7 +7,7 @@ import profileRouter from "./routers/profileRouter.js";
 import homeRouter from "./routers/homeRouter.js";
 import aiRouter from "./routers/aiRouter.js";
 const app = express();
-app.use(cors({ origin: "https://loveable-mu.vercel.app", credentials: true }));
+app.use(cors({ origin: "*" }));
 app.use(json({ limit: "20kb" }));
 app.use(urlencoded({ extended: true, limit: "20kb" }));
 app.use(cookieParser());

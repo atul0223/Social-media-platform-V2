@@ -13,8 +13,7 @@ connection().then(() => {
 
   const io = new Server(server, {
     cors: {
-      origin: "https://loveable-mu.vercel.app",
-      credentials: true,
+      origin: "*",
     },
   });
 
