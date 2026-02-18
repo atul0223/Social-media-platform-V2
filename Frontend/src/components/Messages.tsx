@@ -347,21 +347,18 @@ export default function Messages() {
             />
 
             {selectedChat?.groupAdmin._id === currentUserDetails?._id ? (
-              <div className="mt-37 ">
+              <div className="mt-37 relative w-6 h-6">
+                <img
+                  src="/edit.png"
+                  alt="Edit"
+                  className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 "
+                />
                 <input
-                  id="group-settings-pic"
                   type="file"
                   accept="image/*"
                   onChange={handleChangeGroupPic}
-                  className="sr-only"
+                  className="absolute inset-0 z-20 cursor-pointer opacity-0"
                 />
-                <label htmlFor="group-settings-pic" className="cursor-pointer">
-                  <img
-                    src="/edit.png"
-                    alt="Edit"
-                    className="w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 "
-                  />
-                </label>
               </div>
             ) : (
               <></>

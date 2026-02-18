@@ -179,8 +179,12 @@ function Settings() {
 
   useEffect(() => {
     setTabOpen("settings");
-    if (localStorage.getItem("currentUser") === null) {
+    const hasSession =
+      localStorage.getItem("currentUser") !== null ||
+      localStorage.getItem("accessToken") !== null;
+    if (!hasSession) {
       navigate("/");
+      return;
     }
     fetchCurrentUser();
     setNewUsername(currentUserDetails?.username || "");
@@ -220,24 +224,18 @@ function Settings() {
                           handleDeleteProfilePic();
                         }}
                       />
-                      <div>
+                      <div className="relative w-6 h-6 ml-10 mt-9">
+                        <img
+                          src="edit.png"
+                          alt=""
+                          className="absolute w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10"
+                        />
                         <input
-                          id="settings-profile-pic"
                           type="file"
                           accept="image/*"
                           onChange={handleFileChange}
-                          className="sr-only"
+                          className="absolute inset-0 z-20 cursor-pointer opacity-0"
                         />
-                        <label
-                          htmlFor="settings-profile-pic"
-                          className="cursor-pointer"
-                        >
-                          <img
-                            src="edit.png"
-                            alt=""
-                            className="absolute w-5 h-5 hover:w-6 hover:h-6 active:w-4 active:h-4 z-10 ml-10 mt-9"
-                          />
-                        </label>
                       </div>
                     </div>
                   ) : (

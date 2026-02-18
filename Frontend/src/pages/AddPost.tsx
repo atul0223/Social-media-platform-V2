@@ -112,10 +112,14 @@ const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 useEffect(()=>{
   setTabOpen("newpost")
-  if(localStorage.getItem("currentUser")===null){
+  const hasSession =
+    localStorage.getItem("currentUser") !== null ||
+    localStorage.getItem("accessToken") !== null;
+  if (!hasSession) {
       navigate("/")
+      return;
     }
-})
+}, [navigate, setTabOpen])
 const [generating, setGenerating] = useState(false);
 
 async function generateDescription() {

@@ -84,21 +84,18 @@ function Signup() {
               alt="Group Preview"
               className="object-cover w-30 h-30 rounded-full bg-gray-700 mb-3"
             />
-            <div className="mt-23 ">
+            <div className="mt-23 relative w-5 h-5">
+              <img
+                src="edit.png"
+                alt="Edit"
+                className="absolute w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
+              />
               <input
-                id="signup-profile-pic"
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="sr-only"
+                className="absolute inset-0 z-20 cursor-pointer opacity-0"
               />
-              <label htmlFor="signup-profile-pic" className="cursor-pointer">
-                <img
-                  src="edit.png"
-                  alt="Edit"
-                  className="absolute w-4 h-4 hover:w-5 hover:h-5 active:w-3 active:h-3 z-10"
-                />
-              </label>
             </div>
           </div>
           <FloatingInput

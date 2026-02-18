@@ -118,9 +118,12 @@ export default function Profile() {
   const currentUserDetails = rawUser ? JSON.parse(rawUser) : null;
  
   useEffect(() => {
-    const currentUserDetails =localStorage.getItem("currentUser") 
-    if (currentUserDetails=== null) {
+    const hasSession =
+      localStorage.getItem("currentUser") !== null ||
+      localStorage.getItem("accessToken") !== null;
+    if (!hasSession) {
       navigate("/");
+      return;
     }
 
     setTabOpen("profile");

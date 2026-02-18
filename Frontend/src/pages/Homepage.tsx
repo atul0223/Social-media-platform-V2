@@ -35,8 +35,12 @@ export default function Homepage() {
 
   useEffect(() => {
     setTabOpen("home")
-    if(localStorage.getItem("currentUser")===null){
+    const hasSession =
+      localStorage.getItem("currentUser") !== null ||
+      localStorage.getItem("accessToken") !== null;
+    if (!hasSession) {
       navigate("/")
+      return;
     }
     const fetchPosts = async () => {
       try {

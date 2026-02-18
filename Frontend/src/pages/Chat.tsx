@@ -53,8 +53,12 @@ export default function Chat() {
     setLoading(false);
   };
   useEffect(() => {
-    if(localStorage.getItem("currentUser")===null){
+    const hasSession =
+      localStorage.getItem("currentUser") !== null ||
+      localStorage.getItem("accessToken") !== null;
+    if (!hasSession) {
       navigate("/")
+      return;
     }
     fetchChats();
    
