@@ -36,6 +36,7 @@ export default function Profile() {
   const [followListError, setFollowListError] = useState("");
   const [followerList, setFollowerList] = useState<FollowUser[]>([]);
   const [followingList, setFollowingList] = useState<FollowUser[]>([]);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [canSee, setCansee] = useState(true);
@@ -158,16 +159,20 @@ export default function Profile() {
             </Tooltip>
           </Link>:<></>}
           <div className="h-100 w-full flex flex-wrap justify-center sm:mt-10 ">
-            <div className="rounded-full w-45 h-45 overflow-hidden mt-7">
+            <button
+              type="button"
+              className="rounded-full w-45 h-45 overflow-hidden mt-4 cursor-pointer"
+              onClick={() => setIsImageModalOpen(true)}
+            >
               <img
                 src={targetuser.profilePic || "/pic.jpg"}
                 className="object-cover w-full h-full"
               />
-            </div>
-            <div className="w-full flex justify-center ">
+            </button>
+            <div className="w-full flex justify-center mt-2">
               <h1 className="text-center"> @{targetuser.username}</h1>
             </div>
-            <div className="mt-1 w-full flex items-center justify-center gap-6 sm:gap-10">
+            <div className="mt-0.5 w-full flex items-center justify-center gap-6 sm:gap-10">
               <div className="leading-none">{targetuser.postCount} posts</div>
               <button
                 type="button"
@@ -338,6 +343,30 @@ export default function Profile() {
                 ))
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {isImageModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="absolute right-2 top-2 rounded bg-black/60 px-3 py-1 text-white"
+              onClick={() => setIsImageModalOpen(false)}
+            >
+              Close
+            </button>
+            <img
+              src={targetuser.profilePic || "/pic.jpg"}
+              alt={`${targetuser.username} profile`}
+              className="max-h-[85vh] w-full rounded-lg object-contain"
+            />
           </div>
         </div>
       )}
