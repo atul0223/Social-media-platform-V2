@@ -27,7 +27,6 @@ export default function Profile() {
   const [searchParams] = useSearchParams();
   const user = searchParams.get("user");
   const navigate = useNavigate();
-  const [choice, setChoice] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"followers" | "following">(
     "followers"
@@ -37,6 +36,11 @@ export default function Profile() {
   const [followerList, setFollowerList] = useState<FollowUser[]>([]);
   const [followingList, setFollowingList] = useState<FollowUser[]>([]);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [followUi, setFollowUi] = useState({
+    requestStatus: "follow",
+    isFollowing: false,
+    followerCount: 0,
+  });
 
   const [isLoading, setIsLoading] = useState(false);
   const [canSee, setCansee] = useState(true);
@@ -45,17 +49,15 @@ export default function Profile() {
 
     const data = await fetchUser(user);
 
-    const newRequestStatus = data?.requestStatus;
-
-    if (newRequestStatus === "requested" || newRequestStatus === "unfollow") {
-      setChoice(false);
-    } else if (newRequestStatus === "follow") {
-      setChoice(true);
-    }
     const shouldHidePosts =
       data?.isBlocked ||
       (data?.isPrivate && !data?.profileDetails.isFollowing && !data?.sameUser);
     setCansee(!shouldHidePosts);
+    setFollowUi({
+      requestStatus: data?.requestStatus || "follow",
+      isFollowing: !!data?.profileDetails?.isFollowing,
+      followerCount: data?.profileDetails?.followersCount || 0,
+    });
     setLoading(false);
   };
   const toggleBlock = async () => {
@@ -76,17 +78,28 @@ export default function Profile() {
     }
   };
   const toggleFollow = async () => {
+    const prevState = { ...followUi };
+    const shouldFollow = followUi.requestStatus === "follow";
+
+    setFollowUi((prev) => ({
+      ...prev,
+      requestStatus: shouldFollow ? "requested" : "follow",
+      isFollowing: shouldFollow ? true : false,
+      followerCount: shouldFollow
+        ? prev.followerCount + 1
+        : Math.max(prev.followerCount - 1, 0),
+    }));
+
     setIsLoading(true);
     try {
       await axios.post(
         `${BACKENDURL}/profile/${targetuser.username}/toggleFollow`,
-        { follow: choice },
+        { follow: shouldFollow },
         { withCredentials: true }
       );
-
-      fetchuser();
     } catch (error) {
       console.error("Toggle follow failed:", error);
+      setFollowUi(prevState);
     } finally {
       setIsLoading(false);
     }
@@ -179,7 +192,7 @@ export default function Profile() {
                 className="cursor-pointer leading-none hover:underline"
                 onClick={() => openFollowList("followers")}
               >
-                {targetuser.followerCount} followers
+                {followUi.followerCount} followers
               </button>
               <button
                 type="button"
@@ -204,15 +217,15 @@ export default function Profile() {
                   >
                     <div
                       className={`absolute inset-0 bg-gradient-to-r ${
-                        targetuser.requestStatus === "follow"
+                        followUi.requestStatus === "follow"
                           ? "from-indigo-500 to-purple-500 "
                           : "from-neutral-500 to-neutral-200 "
                       }rounded-lg `}
                     />
                     <div className="px-2 bg-transparent rounded-[6px]  relative group transition duration-200 text-white hover:bg-transparent">
-                      {targetuser.requestStatus === "requested"
+                      {followUi.requestStatus === "requested"
                         ? "Requested"
-                        : targetuser.isFollowing
+                        : followUi.isFollowing
                         ? "Unfollow"
                         : "Follow"}
                     </div>

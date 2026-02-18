@@ -34,7 +34,10 @@ export default function Homepage() {
   const limit = 30;
 
   useEffect(() => {
-    setTabOpen("home")
+    setTabOpen("home");
+  }, [setTabOpen]);
+
+  useEffect(() => {
     const hasSession =
       localStorage.getItem("currentUser") !== null ||
       localStorage.getItem("accessToken") !== null;
@@ -64,7 +67,7 @@ export default function Homepage() {
     };
 
     fetchPosts();
-  }, [page]);
+  }, [page, limit, navigate, setLoading]);
 
   return (
     <div className="h-full w-full  flex flex-wrap justify-center  px-3 sm:py-3  pb-20 sm:pb-0 select-none">

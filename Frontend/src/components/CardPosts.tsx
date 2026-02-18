@@ -95,29 +95,48 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
   };
 
   const handleAddComment = async (postId: string) => {
+    const commentText = newComment.trim();
+    if (!commentText) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment: CommentType = {
+      _id: tempId,
+      comment: commentText,
+      commenterDetails: {
+        username: currentUserDetails.username,
+        profilePic: currentUserDetails.profilePic,
+      },
+    };
+
+    setCommentsCount((prev) => prev + 1);
+    setComments((prev) => [optimisticComment, ...prev]);
+    setNewComment("");
+
     try {
       setLikeLoading(true);
       const res = await axios.post(
         `${BACKENDURL}/profile/${postId}/addComment`,
         {
-          inputComment: newComment,
+          inputComment: commentText,
         },
         { withCredentials: true }
       );
-      setCommentsCount((prev) => prev + 1);
-
-      const newCommentAdd: CommentType = {
+      const savedComment: CommentType = {
         _id: res.data._id,
-        comment: newComment,
+        comment: commentText,
         commenterDetails: {
           username: currentUserDetails.username,
           profilePic: currentUserDetails.profilePic,
         },
       };
-      setComments((prev) => [newCommentAdd, ...prev]);
-      setNewComment("");
+      setComments((prev) =>
+        prev.map((comment) => (comment._id === tempId ? savedComment : comment))
+      );
     } catch (err) {
-      console.error("Toggle like failed:", err);
+      console.error("Add comment failed:", err);
+      setCommentsCount((prev) => Math.max(prev - 1, 0));
+      setComments((prev) => prev.filter((comment) => comment._id !== tempId));
+      setNewComment(commentText);
     }
 
     setLikeLoading(false);
@@ -134,21 +153,26 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
     }
   };
   const handleTogleLike = async (postId: string) => {
+    const prevIsLiked = isLiked;
+    const prevLikesCount = likesCount;
+    const nextIsLiked = !prevIsLiked;
+
+    setIsliked(nextIsLiked);
+    setLikesCount((prev) => (nextIsLiked ? prev + 1 : Math.max(prev - 1, 0)));
+
     try {
       setLikeLoading(true);
       await axios.post(
         `${BACKENDURL}/profile/${postId}/togglelike`,
         {
-          like: !postItem.isLiked,
+          like: nextIsLiked,
         },
         { withCredentials: true }
       );
-      isLiked
-        ? setLikesCount((prev) => prev - 1)
-        : setLikesCount((prev) => prev + 1);
-      setIsliked((prev) => !prev);
     } catch (err) {
       console.error("Toggle like failed:", err);
+      setIsliked(prevIsLiked);
+      setLikesCount(prevLikesCount);
     }
     setLikeLoading(false);
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import UserContext from "./UserContext";
 import axios from "axios";
 import { BACKENDURL } from "../config";
@@ -30,6 +30,8 @@ export default function UserContextProvider({ children }: any) {
   const [tabOpen, setTabOpen] = useState("home");
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const lastUserFetchRef = useRef(0);
+  const inFlightUserFetchRef = useRef<Promise<any> | null>(null);
   const [targetuser, setTargetUser] = useState({
     isPrivate: false,
     posts: {},
@@ -65,6 +67,16 @@ export default function UserContextProvider({ children }: any) {
     return res.data;
   };
   const fetchCurrentUser = async () => {
+    if (inFlightUserFetchRef.current) {
+      return inFlightUserFetchRef.current;
+    }
+
+    const now = Date.now();
+    if (currentUserDetails && now - lastUserFetchRef.current < 10000) {
+      return currentUserDetails;
+    }
+
+    const request = (async () => {
     try {
       const savedToken = getStoredToken();
       if (savedToken) {
@@ -78,6 +90,7 @@ export default function UserContextProvider({ children }: any) {
       if (rawUser) {
         setCurrentUserDetails(JSON.parse(rawUser));
       }
+      lastUserFetchRef.current = Date.now();
       return response.data;
     } catch (error: any) {
       console.error("Error fetching user data:", error);
@@ -89,6 +102,12 @@ export default function UserContextProvider({ children }: any) {
       }
       return null;
     }
+    })();
+
+    inFlightUserFetchRef.current = request;
+    const result = await request;
+    inFlightUserFetchRef.current = null;
+    return result;
   };
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");

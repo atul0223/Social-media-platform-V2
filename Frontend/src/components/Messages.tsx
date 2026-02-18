@@ -83,20 +83,21 @@ export default function Messages() {
     }
   };
 
-  const handleRefresh = () => {
-    const chat = JSON.parse(localStorage.getItem("selectedChat") || "null");
-    setSelectedChat(chat);
-    accessMessage(chat?._id);
-  };
-
   const moveToLastMsg = () =>
     bottomRef.current?.scrollIntoView({ behavior: "auto" , block: "end",
 });
   useEffect(() => {
     fetchCurrentUser();
-    handleRefresh();
-    accessMessage(selectedChat?._id).then(() => moveToLastMsg());
-    socket.emit("joinChat", selectedChat?._id);
+    const chat = JSON.parse(localStorage.getItem("selectedChat") || "null");
+    if (chat?._id) {
+      setSelectedChat(chat);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!selectedChat?._id) return;
+    accessMessage(selectedChat._id).then(() => moveToLastMsg());
+    socket.emit("joinChat", selectedChat._id);
 
     const container = document.getElementById("message-scroll-container");
 
@@ -173,37 +174,41 @@ export default function Messages() {
     }
   };
   useEffect(() => {
-    socket.on("typing", ({ user ,chatId}) => {
-      if (chatId === selectedChat._id) {
-      setIsTyping(true);
-      setTimeout(() => {
+    const onTyping = ({ user, chatId }: any) => {
+      if (chatId === selectedChat?._id) {
+        setIsTyping(true);
+        setTimeout(() => {
+          setIsTyping(false);
+        }, 3000);
+        setTypingUser(user);
+        moveToLastMsg();
+      }
+    };
+    const onStopTyping = ({ chatId }: any) => {
+      if (chatId === selectedChat?._id) {
         setIsTyping(false);
-      }, 3000);
-      setTypingUser(user);
-      moveToLastMsg();
-      
-   } });
-   socket.on("stop typing", ({ chatId }) => {
-  if (chatId === selectedChat._id) {
-    setIsTyping(false);
-  }
-});
-    socket.on("connected", () => setSocketConnected(true));
-    socket.on("newMessage", (msg) => {
-      if (msg.chat._id === selectedChat._id) {
+      }
+    };
+    const onConnected = () => setSocketConnected(true);
+    const onNewMessage = (msg: any) => {
+      if (msg?.chat?._id === selectedChat?._id) {
         setMessages((prev: any) => [...prev, msg]);
         moveToLastMsg();
-      } else return;
-    });
+      }
+    };
+
+    socket.on("typing", onTyping);
+    socket.on("stop typing", onStopTyping);
+    socket.on("connected", onConnected);
+    socket.on("newMessage", onNewMessage);
 
     return () => {
-       socket.off("typing");
-    socket.off("stop typing");
-    socket.off("newMessage");
-    socket.off("connected");
-
+      socket.off("typing", onTyping);
+      socket.off("stop typing", onStopTyping);
+      socket.off("newMessage", onNewMessage);
+      socket.off("connected", onConnected);
     };
-  }, [socket, messages]);
+  }, [selectedChat?._id, setMessages]);
 
   const handleExitGroup = async () => {
     try {

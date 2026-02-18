@@ -31,15 +31,9 @@ export default function Chat() {
     setIsCreatingGroup,
   }: any = useContext(UserContext);
   const [searchData, setSearchData] = useState<CurrentUserDetails[]>();
-  const handleSearch = async (e: any) => {
+  const handleSearch = (e: any) => {
     setTargetSearch(e.target.value);
     e.target.value !== "" ? setIsSearching(true) : setIsSearching(false);
-    const res = await axios.get(`${BACKENDURL}/home/search?query=${e.target.value}&&searchType=users`, {
-      
-      withCredentials: true,
-    });
-
-    setSearchData(res.data);
   };
   const [chats, setChats] = useState<Chat>();
   const fetchChats = async () => {
@@ -67,16 +61,28 @@ export default function Chat() {
 
   useEffect(() => {
     setTabOpen("chat");
-    socket.on("newMessage", (newMessage) => {
-      
-    
-       chats &&  Object.entries(chats).map((chat: any) =>
-          chat._id === newMessage.chat._id
-            ? { ...chat, latestMessage: newMessage }
-            : chat
-        )
-    });
-  }, [socket]);
+  }, [setTabOpen]);
+
+  useEffect(() => {
+    if (!targetSearch.trim()) {
+      setSearchData([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axios.get(
+          `${BACKENDURL}/home/search?query=${targetSearch}&&searchType=users`,
+          { withCredentials: true }
+        );
+        setSearchData(res.data);
+      } catch (error) {
+        console.error("User search failed:", error);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [targetSearch]);
   const handleAccessChat = (userId: any) => {
     setLoading(true);
     accessChat(userId).then((chatDetails: any) => {
