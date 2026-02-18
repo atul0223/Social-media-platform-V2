@@ -6,6 +6,7 @@ import chatRouter from "./routers/chatRouter.js";
 import profileRouter from "./routers/profileRouter.js";
 import homeRouter from "./routers/homeRouter.js";
 import aiRouter from "./routers/aiRouter.js";
+import pushRouter from "./routers/pushRouter.js";
 const app = express();
 app.use(cors({ origin: "https://loveable-mu.vercel.app", credentials: true }));
 app.use(json({ limit: "20kb" }));
@@ -17,6 +18,7 @@ app.use("/profile", profileRouter);
 app.use("/home", homeRouter);
 app.use("/chat", chatRouter);
 app.use("/ai", aiRouter);
+app.use("/push", pushRouter);
 app.use((req, res, next) => {
   console.log(`Unhandled request: ${req.method} ${req.originalUrl}`);
   res.status(404).send("Route not found");

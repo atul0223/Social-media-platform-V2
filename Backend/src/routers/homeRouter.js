@@ -2,7 +2,11 @@ import Router from "express";
 import verifyUser from "../middleware/auth.middleware.js";
 import { homePage } from "../controllers/user.controller.js";
 import User from "../models/user.model.js";
-import { getNotifications } from "../controllers/user.controller.js";
+import {
+  getNotifications,
+  markAllRead,
+  markRead,
+} from "../controllers/notification.controller.js";
 import Post from "../models/posts.model.js";
 const router = Router();
 
@@ -129,5 +133,8 @@ router.route("/search").get(verifyUser, async (req, res) => {
      return res.status(200).json(posts);
   }
 });
+router.route("/notifications").get(verifyUser, getNotifications);
 router.route("/Notifications").get(verifyUser, getNotifications);
+router.route("/notifications/read").post(verifyUser, markAllRead);
+router.route("/notifications/:id/read").post(verifyUser, markRead);
 export default router;

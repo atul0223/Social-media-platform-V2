@@ -5,6 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 import Like from "../models/likes.model.js";
 import User from "../models/user.model.js";
 import Comment from "../models/comments.model.js";
+import { createNotification } from "../utils/notifications.js";
 
 const extractPublicId = (url) => {
   try {
@@ -90,6 +91,15 @@ const toggleLike = async (req, res) => {
         post: postExists._id,
         likedBy: user._id,
       });
+      await createNotification({
+        recipientId: postExists.publisher,
+        actorId: user._id,
+        type: "like",
+        message: `@${user.username} liked your post`,
+        target: { postId: postExists._id },
+        url: `/post/${postExists._id}`,
+        title: "New like",
+      });
       return res.status(200).json({
         message: "successfully liked",
       });
@@ -139,6 +149,16 @@ const addComment = async (req, res) => {
   });
   if (!createComment)
     return res.status(500).json({ message: "error while creating a comment" });
+  await createNotification({
+    recipientId: postExists.publisher,
+    actorId: user._id,
+    type: "comment",
+    message: `@${user.username} commented on your post`,
+    preview: inputComment?.slice(0, 140),
+    target: { postId: postExists._id, commentId: createComment._id },
+    url: `/post/${postExists._id}`,
+    title: "New comment",
+  });
   return res.status(200).json({
     message: "successfully commented",
     _id: createComment._id,

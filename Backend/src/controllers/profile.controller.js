@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import isFollowed from "../utils/isFollowed.js";
 import UserProfile from "../models/UserProfile.model.js";
 import Post from "../models/posts.model.js";
+import { createNotification } from "../utils/notifications.js";
 const getUserProfile = async (req, res) => {
   try {
     const { username } = req.params;
@@ -327,36 +328,53 @@ const toggleFollow = async (req, res) => {
       return res.status(401).json({ message: "already following" });
     }
     if (!user.profilePrivate) {
-      await UserProfile.create({
-        follower: userX._id,
-        profile: user._id,
-        requestStatus: "accepted",
-      })
-        .then(() => {
-          res.status(200).json({
-            message: "Followed successfully",
-            success: true,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
+      try {
+        await UserProfile.create({
+          follower: userX._id,
+          profile: user._id,
+          requestStatus: "accepted",
         });
+        await createNotification({
+          recipientId: user._id,
+          actorId: userX._id,
+          type: "follow",
+          message: `@${userX.username} started following you`,
+          target: {},
+          url: `/profile?user=${userX.username}`,
+          title: "New follower",
+        });
+        return res.status(200).json({
+          message: "Followed successfully",
+          success: true,
+        });
+      } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: "internal server error" });
+      }
     } else if (user.profilePrivate) {
-      await UserProfile.create({
-        follower: userX._id,
-        profile: user._id,
-        requestStatus: "pending",
-      })
-        .then(() => {
-          res.status(200).json({
-            message: "request sent successfully",
-            success: true,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-          return res.status(500).json({ message: "internal server error" });
+      try {
+        await UserProfile.create({
+          follower: userX._id,
+          profile: user._id,
+          requestStatus: "pending",
         });
+        await createNotification({
+          recipientId: user._id,
+          actorId: userX._id,
+          type: "follow_request",
+          message: `@${userX.username} requested to follow you`,
+          target: {},
+          url: `/profile?user=${userX.username}`,
+          title: "Follow request",
+        });
+        return res.status(200).json({
+          message: "request sent successfully",
+          success: true,
+        });
+      } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: "internal server error" });
+      }
     }
   } else if (!follow) {
     try {

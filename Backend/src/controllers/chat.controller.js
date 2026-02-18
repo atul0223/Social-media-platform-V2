@@ -7,6 +7,7 @@ import {
   isBlockedByCurrentUser,
   isBlockedByTargetUser,
 } from "../utils/isBlocked.js";
+import { createNotification } from "../utils/notifications.js";
 const fetchChats = async (req, res) => {
   const user = req.user;
 
@@ -378,6 +379,26 @@ const sendMessage = async (req, res) => {
   });
 
   await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
+
+  if (chat?.users?.length) {
+    const recipients = chat.users.filter(
+      (u) => u.toString() !== req.user._id.toString()
+    );
+    await Promise.all(
+      recipients.map((recipientId) =>
+        createNotification({
+          recipientId,
+          actorId: req.user._id,
+          type: "message",
+          message: `@${req.user.username} sent you a message`,
+          preview: content?.slice(0, 140),
+          target: { chatId: chat._id },
+          url: "/chat",
+          title: "New message",
+        })
+      )
+    );
+  }
 
   res.json(message);
 };

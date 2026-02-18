@@ -6,6 +6,7 @@ import sendOtp from "../utils/sendOtp.js";
 import UserProfile from "../models/UserProfile.model.js";
 import mongoose from "mongoose";
 import Post from "../models/posts.model.js";
+import { createNotification } from "../utils/notifications.js";
 const extractPublicId = (url) => {
   try {
     const regex = /\/upload\/(?:v\d+\/)?(.+?)\.[a-zA-Z]+$/;
@@ -319,6 +320,15 @@ const handleRequest = async (req, res) => {
 
   request.requestStatus = "accepted";
   await request.save({ validateBeforeSave: true });
+  await createNotification({
+    recipientId: request.follower,
+    actorId: user._id,
+    type: "follow_accept",
+    message: `@${user.username} accepted your follow request`,
+    target: {},
+    url: `/profile?user=${user.username}`,
+    title: "Follow request accepted",
+  });
 
   return res.status(200).json({ message: "request accepted" });
 };
