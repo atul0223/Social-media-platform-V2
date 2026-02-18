@@ -202,6 +202,9 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
   const handleOpenModel = async (singlePost: PostType) => {
     try {
       setsinglePostOpen(true);
+      setComments([]);
+      setPage(1);
+      setHasMore(true);
       setActivePost(singlePost);
       setLoading(true);
       setIsliked(singlePost.isLiked);
@@ -211,6 +214,28 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
       console.error("Delete post failed:", error);
     }
     setLoading(false);
+  };
+
+  const handleCloseModel = () => {
+    setsinglePostOpen(false);
+    setComments([]);
+    setPage(1);
+    setHasMore(true);
+    setActivePost({
+      isLiked: false,
+      commentsCount: 0,
+      likesCount: 0,
+      publisherDetails: {
+        username: "",
+        profilePic: "",
+      },
+      postDetails: {
+        title: "",
+        _id: "",
+        content: "",
+        description: "",
+      },
+    });
   };
 
   const handleDeletePosts = async (postId: string) => {
@@ -242,12 +267,7 @@ export function CardPosts(props: { postItem: PostType; postKey: string }) {
             src="/close.png"
             alt=""
             className="w-6 h-6 rounded-full  hover:h-5 hover:w-5 cursor-pointer"
-            onClick={() => {
-              setLoading(true);
-              window.location.href = window.location.href;
-              setsinglePostOpen(false);
-              setLoading(false);
-            }}
+            onClick={handleCloseModel}
           />
         </div>
         <div className="w-full h-full border-2 border-zinc-200 rounded-3xl shadow-2xl shadow-black sm:flex justify-center gap-5 md:gap-0 overflow-y-scroll sm:overflow-y-visible">
