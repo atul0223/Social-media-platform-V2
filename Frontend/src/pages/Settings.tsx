@@ -224,7 +224,7 @@ function Settings() {
                           handleDeleteProfilePic();
                         }}
                       />
-                      <div className="relative w-6 h-6 ml-10 mt-9">
+                      <div className="absolute ml-10 mt-9 w-5 h-5">
                         <img
                           src="edit.png"
                           alt=""

@@ -16,6 +16,8 @@ const applyAuthToken = (token: string | null) => {
   localStorage.removeItem(AUTH_TOKEN_KEY);
 };
 
+const getStoredToken = () => localStorage.getItem(AUTH_TOKEN_KEY);
+
 export default function UserContextProvider({ children }: any) {
   const [singlePostopen, setsinglePostOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,6 +66,10 @@ export default function UserContextProvider({ children }: any) {
   };
   const fetchCurrentUser = async () => {
     try {
+      const savedToken = getStoredToken();
+      if (savedToken) {
+        applyAuthToken(savedToken);
+      }
       const response = await axios.get(`${BACKENDURL}/user/getUser`, {
         withCredentials: true,
       });
@@ -76,7 +82,7 @@ export default function UserContextProvider({ children }: any) {
     } catch (error: any) {
       console.error("Error fetching user data:", error);
       const status = error?.response?.status;
-      if (status === 401 || status === 403) {
+      if ((status === 401 || status === 403) && !getStoredToken()) {
         applyAuthToken(null);
         localStorage.removeItem("currentUser");
         setCurrentUserDetails(undefined);
@@ -86,13 +92,26 @@ export default function UserContextProvider({ children }: any) {
   };
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
-    const savedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    const savedToken = getStoredToken();
     applyAuthToken(savedToken);
+    const interceptor = axios.interceptors.request.use((config) => {
+      const token = getStoredToken();
+      if (token) {
+        config.headers = config.headers || {};
+        if (!(config.headers as any).Authorization) {
+          (config.headers as any).Authorization = `Bearer ${token}`;
+        }
+      }
+      return config;
+    });
     setIsSmallScreen(mediaQuery.matches);
     fetchCurrentUser();
     const handler = (e: any) => setIsSmallScreen(e.matches);
     mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    return () => {
+      mediaQuery.removeEventListener("change", handler);
+      axios.interceptors.request.eject(interceptor);
+    };
   }, []);
 
   const fetchUser = async (username: string) => {
