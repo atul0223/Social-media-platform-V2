@@ -32,10 +32,14 @@ export default function OtpComponent({
         { identifier, otp, trustDevice ,emailVerify },
         { withCredentials: true }
       )
-      .then(() => {
+      .then(async () => {
         setLoading(false);
-        fetchCurrentUser()
-        navigate("/homepage");
+        const user = await fetchCurrentUser();
+        if (user) {
+          navigate("/homepage");
+        } else {
+          setError("OTP verified, but session was not saved in this wrapper.");
+        }
       })
       .catch((_error) => {
         setLoading(false);

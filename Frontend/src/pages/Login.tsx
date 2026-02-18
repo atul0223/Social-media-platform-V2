@@ -50,10 +50,14 @@ function Login() {
         { identifier, password, trustDevice },
         { withCredentials: true }
       )
-      .then(() => {
+      .then(async () => {
         setLoading(false);
-        fetchCurrentUser();
-        navigate("/homepage");
+        const user = await fetchCurrentUser();
+        if (user) {
+          navigate("/homepage");
+        } else {
+          setError("Login succeeded, but session was not saved in this wrapper.");
+        }
       })
       .catch((_error) => {
         setLoading(false);
