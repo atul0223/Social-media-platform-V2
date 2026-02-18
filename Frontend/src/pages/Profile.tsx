@@ -116,6 +116,7 @@ export default function Profile() {
   };
   const rawUser = localStorage.getItem("currentUser");
   const currentUserDetails = rawUser ? JSON.parse(rawUser) : null;
+  const activeList = activeTab === "followers" ? followerList : followingList;
  
   useEffect(() => {
     const hasSession =
@@ -166,18 +167,18 @@ export default function Profile() {
             <div className="w-full flex justify-center ">
               <h1 className="text-center"> @{targetuser.username}</h1>
             </div>
-            <div className="w-full flex justify-center gap-12">
-              <div>{targetuser.postCount} posts</div>
+            <div className="mt-1 w-full flex items-center justify-center gap-6 sm:gap-10">
+              <div className="leading-none">{targetuser.postCount} posts</div>
               <button
                 type="button"
-                className="cursor-pointer hover:underline"
+                className="cursor-pointer leading-none hover:underline"
                 onClick={() => openFollowList("followers")}
               >
                 {targetuser.followerCount} followers
               </button>
               <button
                 type="button"
-                className="cursor-pointer hover:underline"
+                className="cursor-pointer leading-none hover:underline"
                 onClick={() => openFollowList("following")}
               >
                 {targetuser.followingCount} following
@@ -193,7 +194,6 @@ export default function Profile() {
                 ) : (
                   <button
                     className="p-[3px] relative   cursor-pointer"
-                    value={targetuser.isfollowing}
                     onClick={toggleFollow}
                     disabled={isLoading}
                   >
@@ -215,7 +215,6 @@ export default function Profile() {
                 )}
                 <button
                   className="p-[3px] relative   cursor-pointer"
-                  value={targetuser.isblocked}
                   onClick={toggleBlock}
                   disabled={isLoading}
                 >
@@ -316,11 +315,10 @@ export default function Profile() {
                 <p className="py-6 text-center text-sm text-neutral-500">Loading...</p>
               ) : followListError ? (
                 <p className="py-6 text-center text-sm text-red-600">{followListError}</p>
-              ) : (activeTab === "followers" ? followerList : followingList)
-                  .length === 0 ? (
+              ) : activeList.length === 0 ? (
                 <p className="py-6 text-center text-sm text-neutral-500">No users found.</p>
               ) : (
-                (activeTab === "followers" ? followerList : followingList).map((item) => (
+                activeList.map((item) => (
                   <button
                     key={item._id}
                     type="button"
