@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import Messages from "../components/Messages.js";
 import { FaPlus } from "react-icons/fa";
 import CreateGroup from "../components/CreateGroup.js";
-import socket from "../helper/socket.js";
 import type { Chat, CurrentUserDetails } from "@/Types/Types.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip.js";
 
