@@ -156,6 +156,10 @@ function Signup() {
               terms & conditions
             </Link>
           </label>
+          <p className="mt-2 text-sm text-gray-700">
+            *Password must be at least 8 characters and include at
+            least 1 letter and 1 number.
+          </p>
           <Button
             className="w-full mt-4 cursor-pointer"
             type="submit"
