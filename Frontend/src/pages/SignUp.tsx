@@ -9,6 +9,10 @@ import Loading from "@/components/Loading";
 import axios from "axios";
 import OtpComponent from "@/components/OtpComponent";
 
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const PASSWORD_ERROR =
+  "Password must be at least 8 characters and include at least 1 letter and 1 number.";
+
 function Signup() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -28,6 +32,14 @@ function Signup() {
     };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!PASSWORD_RULE.test(password)) {
+      setError(PASSWORD_ERROR);
+      return;
+    }
+    if (password !== confirmpass) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
     const formData = new FormData();
     formData.append("username", username);
@@ -124,7 +136,7 @@ function Signup() {
             readOnly={loading}
           />
           <FloatingInput
-            type="text"
+            type="password"
             label="Confirm Password"
             value={confirmpass}
             onChange={handleChange(setConfirmPass)}
@@ -147,7 +159,14 @@ function Signup() {
           <Button
             className="w-full mt-4 cursor-pointer"
             type="submit"
-            disabled={loading || password!==confirmpass || [username,password,confirmpass,email].some(f=>f.trim()==="")}
+            disabled={
+              loading ||
+              password !== confirmpass ||
+              !PASSWORD_RULE.test(password) ||
+              [username, password, confirmpass, email].some(
+                (f) => f.trim() === ""
+              )
+            }
           >
             Sign up
           </Button>

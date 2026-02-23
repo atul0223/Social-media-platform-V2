@@ -10,6 +10,10 @@ import axios from "axios";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import OtpComponent from "@/components/OtpComponent";
 
+const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const PASSWORD_ERROR =
+  "Password must be at least 8 characters and include at least 1 letter and 1 number.";
+
 function Login() {
   let emailVerify;
   const navigate = useNavigate();
@@ -39,6 +43,10 @@ function Login() {
     };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!PASSWORD_RULE.test(password)) {
+      setError(PASSWORD_ERROR);
+      return;
+    }
     setLoading(true);
     await axios
       .post(
@@ -127,7 +135,12 @@ function Login() {
             <Button
               className="w-full mt-4"
               type="submit"
-              disabled={loading || password === "" || identifier === ""}
+              disabled={
+                loading ||
+                password === "" ||
+                identifier === "" ||
+                !PASSWORD_RULE.test(password)
+              }
             >
               Login
             </Button>
