@@ -7,14 +7,14 @@ const generateDescription = async (req, res, next) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ message: "OPENAI_API_KEY is not configured" });
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ message: "GROQ_API_KEY is not configured" });
     }
 
     const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
-        model: "gpt-4o-mini",
+        model: "llama-3.1-8b-instant",
         messages: [
           {
             role: "system",
@@ -30,7 +30,7 @@ const generateDescription = async (req, res, next) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -40,12 +40,12 @@ const generateDescription = async (req, res, next) => {
     return res.status(200).json({ description: description || "" });
   } catch (error) {
     const status = error?.response?.status;
-    const openaiError = error?.response?.data;
+    const groqError = error?.response?.data;
 
     console.error("[AI][generate-description] Internal server error", {
       message: error?.message,
       status,
-      openaiError,
+      groqError,
       method: req.method,
       path: req.originalUrl,
       userId: req.user?._id || req.user?.id || "unknown",
