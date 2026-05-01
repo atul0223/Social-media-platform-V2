@@ -100,7 +100,7 @@ function Settings() {
     setLoading(true);
     try {
       await axios.post(
-        `${BACKENDURL}/user/changePassword`,
+        `${BACKENDURL}/user/changePasswordIn`,
         { newPassword: newPassword },
         { withCredentials: true }
       );
