@@ -8,7 +8,34 @@ import homeRouter from "./routers/homeRouter.js";
 import aiRouter from "./routers/aiRouter.js";
 import pushRouter from "./routers/pushRouter.js";
 const app = express();
-app.use(cors({ origin: "https://loveable-mu.vercel.app", credentials: true }));
+
+const staticAllowedOrigins = [
+  "https://loveable-mu.vercel.app",
+  "https://social-media-platform-saas.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+const localhostRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        staticAllowedOrigins.includes(origin) || localhostRegex.test(origin);
+
+      if (isAllowed) return callback(null, true);
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+app.get("/health", (req, res) => res.status(200).json({ status: "ok" }));
 app.use(json({ limit: "20kb" }));
 app.use(urlencoded({ extended: true, limit: "20kb" }));
 app.use(cookieParser());
