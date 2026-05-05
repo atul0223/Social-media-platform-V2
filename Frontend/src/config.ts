@@ -1,1 +1,1 @@
-export const BACKENDURL="https://social-media-platform-v2.vercel.app"
+export const BACKENDURL="https://social-media-platform-saas.onrender.com"
