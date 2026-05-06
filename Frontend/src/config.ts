@@ -1,1 +1,1 @@
-export const BACKENDURL="https://loveablebackend-e0mig95j.b4a.run"
+export const BACKENDURL="https://loveablebackend-alwryu85.b4a.run"
