@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const socket = io("https://loveablebackend-hbyj0cin.b4a.run", {
+const socket = io("https://social-media-platform-saas.onrender.com", {
   transports: ["websocket"],
   secure: true,
   reconnection: true,

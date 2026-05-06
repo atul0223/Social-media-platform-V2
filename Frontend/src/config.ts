@@ -1,1 +1,1 @@
-export const BACKENDURL="https://loveablebackend-hbyj0cin.b4a.run"
+export const BACKENDURL="https://social-media-platform-saas.onrender.com"
